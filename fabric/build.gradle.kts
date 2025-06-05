@@ -2,6 +2,12 @@ plugins {
     id("fabric-loom") version "1.9-SNAPSHOT"
 }
 
+val shade by configurations.creating
+
+base {
+    archivesName.set("Knit-Loader-Fabric")
+}
+
 dependencies {
     minecraft("com.mojang:minecraft:${rootProject.property("minecraft_version")}")
     mappings(loom.officialMojangMappings())
@@ -17,7 +23,7 @@ dependencies {
     include(modApi("de.florianmichael:AsmFabricLoader:${property("asmfabricloader_version")}")!!)
     include(implementation(annotationProcessor("com.github.bawnorton.mixinsquared:mixinsquared-fabric:${rootProject.property("mixin_squared_version")}")!!)!!)
 
-    api(project(":loader"))
+    shade(api(project(":"))!!)
 }
 
 tasks {
@@ -52,5 +58,16 @@ tasks {
                 it
             }
         }
+    }
+
+    shadowJar {
+        configurations = listOf(shade)
+        archiveClassifier = "dev-shadow"
+    }
+
+    remapJar {
+        inputFile.set(project.tasks.shadowJar.get().archiveFile)
+        archiveClassifier = null
+        dependsOn(project.tasks.shadowJar)
     }
 }

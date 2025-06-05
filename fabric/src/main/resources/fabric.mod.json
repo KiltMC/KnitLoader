@@ -8,8 +8,8 @@
         "BluSpring"
     ],
     "contact": {
-        "repo": "https://github.com/KiltMC/Kilt/",
-        "issues": "https://github.com/KiltMC/Kilt/issues"
+        "repo": "https://github.com/KiltMC/KnitLoader/",
+        "issues": "https://github.com/KiltMC/KnitLoader/issues"
     },
     "license": "MIT",
     "icon": "assets/knit_loader/icon.png",

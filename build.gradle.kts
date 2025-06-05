@@ -1,12 +1,14 @@
 plugins {
     kotlin("jvm")
+    id("com.gradleup.shadow") version "8.3.6"
 }
 
 base {
     archivesName.set("Knit-Loader")
 }
 
-version = property("mod_version") as String
+val knitVersion = property("mod_version") as String
+version = knitVersion
 
 allprojects {
     apply(plugin = "java")
@@ -20,7 +22,8 @@ allprojects {
 }
 
 subprojects {
-    version = property("mod_version") as String
+    apply(plugin = "com.gradleup.shadow")
+    version = knitVersion
 }
 
 dependencies {

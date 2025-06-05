@@ -17,15 +17,19 @@
         "intermediate_mappings": "net.fabricmc:intermediary",
         "metadata": {
             "name": "Knit Loader",
-            "description": "A mod that allows mods to load other mods. Abstraction library for ",
+            "description": "A heavy abstraction of Kilt's loader code to allow for reuse in other bridge-type mods.",
             "license": "MIT",
             "contributors": {
                 "BluSpring": "Maintainer"
             },
             "contact": {
-                "sources": "https://github.com/KiltMC/Kilt",
-                "issues": "https://github.com/KiltMC/Kilt/issues"
-            }
+                "sources": "https://github.com/KiltMC/KnitLoader",
+                "issues": "https://github.com/KiltMC/KnitLoader/issues"
+            },
+            "icon": "assets/knit_loader/icon.png"
         }
+    },
+    "modmenu": {
+        "badges": [ "library" ]
     }
 }

@@ -12,3 +12,7 @@ dependencies {
     compileOnly(cichlid.api("0.3.2"))
     cichlidRuntime(cichlid.runtime("0.3.2"))
 }*/
+
+base {
+    archivesName.set("Knit-Loader-Cichlid")
+}

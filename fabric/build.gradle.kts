@@ -2,7 +2,7 @@ plugins {
     id("fabric-loom") version "1.9-SNAPSHOT"
 }
 
-val shade by configurations.creating
+val common by configurations.creating
 
 base {
     archivesName.set("Knit-Loader-Fabric")
@@ -23,7 +23,10 @@ dependencies {
     include(modApi("de.florianmichael:AsmFabricLoader:${property("asmfabricloader_version")}")!!)
     include(implementation(annotationProcessor("com.github.bawnorton.mixinsquared:mixinsquared-fabric:${rootProject.property("mixin_squared_version")}")!!)!!)
 
-    shade(api(project(":"))!!)
+    api(project(project.parent!!.path))
+    common(project(project.parent!!.path)) {
+        isTransitive = false
+    }
 }
 
 tasks {
@@ -61,7 +64,7 @@ tasks {
     }
 
     shadowJar {
-        configurations = listOf(shade)
+        configurations = listOf(common)
         archiveClassifier = "dev-shadow"
     }
 

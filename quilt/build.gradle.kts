@@ -16,7 +16,7 @@ loom {
         // This should match your mod id.
         create("knit_loader") {
             sourceSet("main")
-            dependency(dependencies.project(":"))
+            dependency(dependencies.project(project.parent!!.path))
             // If you shade (directly include classes, not JiJ) a dependency into your mod, include it here using one of these methods:
             // dependency("com.example.shadowedmod:1.2.3")
             // configuration("exampleShadedConfigurationName")
@@ -24,7 +24,7 @@ loom {
     }
 }
 
-val shade by configurations.creating
+val common by configurations.creating
 
 dependencies {
     minecraft("com.mojang:minecraft:${rootProject.property("minecraft_version")}")
@@ -35,14 +35,10 @@ dependencies {
     // TODO: use Quilt Kotlin Libraries when it's updated to Kotlin 2.1.21
     modImplementation ("net.fabricmc:fabric-language-kotlin:${rootProject.property("fabric_kotlin_version")}")
 
-    // TODO: remove this when 0.5 is mainlined into Fabric
-    include(implementation(annotationProcessor("io.github.llamalad7:mixinextras-fabric:${rootProject.property("mixinextras_version")}")!!)!!)
-
-    include(implementation("com.moulberry:mixinconstraints:${rootProject.property("mixinconstraints_version")}") {
-        exclude("org.spongepowered", "mixin")
-    })
-
-    shade(api(project(":"))!!)
+    api(project(project.parent!!.path))
+    common(project(project.parent!!.path)) {
+        isTransitive = false
+    }
 }
 
 tasks {
@@ -77,7 +73,7 @@ tasks {
     }
 
     shadowJar {
-        configurations = listOf(shade)
+        configurations = listOf(common)
         archiveClassifier = "dev-shadow"
     }
 

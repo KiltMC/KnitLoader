@@ -17,6 +17,9 @@ import xyz.bluspring.knit.loader.mod.KnitMod
 import xyz.bluspring.knit.loader.mod.ModDefinition
 import xyz.bluspring.knit.loader.mod.ModEnvironment
 import xyz.bluspring.knit.loader.mod.ModVersion
+import java.nio.file.Path
+import java.util.jar.JarFile
+import kotlin.io.path.extension
 
 class KnitLoaderFabric : KnitLoader<ModContainerImpl>("Fabric") {
     private val candidates = mutableMapOf<ModDefinition, ModCandidateImpl>()
@@ -127,6 +130,17 @@ class KnitLoaderFabric : KnitLoader<ModContainerImpl>("Fabric") {
 
     override fun modExistsNatively(id: String): Boolean {
         return FabricLoader.getInstance().isModLoaded(id)
+    }
+
+    override fun fileExistsNatively(path: Path): Boolean {
+        if (path.extension == "jar") {
+            val jar = JarFile(path.toFile())
+
+            // It's easier to just check for this, honestly.... >:(
+            return jar.getEntry("fabric.mod.json") != null
+        }
+
+        return false
     }
 
     override fun getNativeModVersion(id: String): ModVersion {

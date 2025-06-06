@@ -85,4 +85,11 @@ abstract class KnitModLoader<T : KnitMod>(
      * Afterward, every mod provided here will be injected into the native mod loader.
      */
     abstract suspend fun createModContainers(definitions: Collection<ModDefinition>): Collection<T>
+
+    /**
+     * Allows the mod loader to check if the mod actually exists natively
+     */
+    fun modExistsNatively(id: String): Boolean {
+        return KnitLoader.instance.modExistsNatively(id)
+    }
 }

@@ -15,12 +15,17 @@ import xyz.bluspring.knit.loader.mod.KnitMod
 import xyz.bluspring.knit.loader.mod.ModDefinition
 import xyz.bluspring.knit.loader.mod.ModEnvironment
 import xyz.bluspring.knit.loader.mod.ModVersion
+import java.nio.file.Path
 
 class KnitLoaderQuilt : KnitLoader<ModContainer>("Quilt"), QuiltLoaderPlugin {
     private lateinit var context: QuiltPluginContext
 
     override fun <T : KnitMod> createContainer(mod: T): ModContainer {
         TODO("Not yet implemented")
+    }
+
+    override fun fileExistsNatively(path: Path): Boolean {
+        return this.context.manager().modPaths.contains(path)
     }
 
     override fun modExistsNatively(id: String): Boolean {

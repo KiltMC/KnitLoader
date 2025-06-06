@@ -4,6 +4,7 @@ import org.jetbrains.annotations.ApiStatus
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import xyz.bluspring.knit.loader.mod.*
+import xyz.bluspring.knit.loader.util.IncompatibleModException
 import java.nio.file.Path
 import java.util.*
 import kotlin.io.path.isDirectory
@@ -38,14 +39,20 @@ abstract class KnitLoader<C>(val nativeModLoaderName: String) {
             for (scanDir in loader.modDirs) {
                 path.resolve(scanDir).walk().filter { !it.isDirectory() }.forEach { modPath ->
                     for (loader in loaders) {
-                        val definitionsToAdd = loader.getModDefinitions(modPath)
+                        try {
+                            val definitionsToAdd = loader.getModDefinitions(modPath)
 
-                        synchronized(loadersToDefinitions) {
-                            val definitions = loadersToDefinitions.computeIfAbsent(loader) { Collections.synchronizedSet(mutableSetOf()) }
+                            synchronized(loadersToDefinitions) {
+                                val definitions = loadersToDefinitions.computeIfAbsent(loader) { Collections.synchronizedSet(mutableSetOf()) }
 
-                            synchronized(definitions) {
-                                definitions.addAll(definitionsToAdd)
+                                synchronized(definitions) {
+                                    definitions.addAll(definitionsToAdd)
+                                }
                             }
+                        } catch (e: IncompatibleModException) {
+                            // If the file has not been loaded by Fabric, throw an exception.
+                            if (!fileExistsNatively(modPath))
+                                throw e
                         }
                     }
                 }
@@ -221,6 +228,7 @@ abstract class KnitLoader<C>(val nativeModLoaderName: String) {
      */
     abstract fun modExistsNatively(id: String): Boolean
     abstract fun getNativeModVersion(id: String): ModVersion
+    abstract fun fileExistsNatively(path: Path): Boolean
 
     fun getLoaderById(id: String): KnitModLoader<*>? {
         return this.loaders.firstOrNull { it.id == id }

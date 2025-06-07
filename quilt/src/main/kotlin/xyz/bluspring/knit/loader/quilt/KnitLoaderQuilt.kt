@@ -55,7 +55,7 @@ class KnitLoaderQuilt : KnitLoader<ModContainer>("Quilt"), QuiltLoaderPlugin {
         }
     }
 
-    override fun validateDependencies(definitions: Map<ModDefinition, KnitModLoader<*>>) {
+    override fun validateDependencies(definitions: Map<ModDefinition, KnitModLoader<*>>, mappedIds: Map<String, String>) {
 
     }
 

@@ -92,4 +92,12 @@ abstract class KnitModLoader<T : KnitMod>(
     fun modExistsNatively(id: String): Boolean {
         return KnitLoader.instance.modExistsNatively(id)
     }
+
+    /**
+     * Used for cases where the dependency's mod ID is different between Forge and Fabric, return the native mod ID here.
+     * Note that the native loader name is usually uppercased, for example "Fabric".
+     */
+    open fun getNativeModId(dependencyId: String, nativeLoaderName: String): String {
+        return dependencyId
+    }
 }

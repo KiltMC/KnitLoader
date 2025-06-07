@@ -60,12 +60,15 @@ abstract class KnitLoader<C>(val nativeModLoaderName: String) {
         }
 
         val definitionsToLoad = mutableMapOf<ModDefinition, KnitModLoader<*>>()
+        val mappedModIds = mutableMapOf<String, String>()
 
         // First pass, get all mods that are to be loaded by Knit.
-        for (modId in loadersToDefinitions.values.flatten().distinctBy { it.id }.map { it.id }) {
+        definitionsLoad@for (modId in loadersToDefinitions.values.flatten().distinctBy { it.id }.map { it.id }) {
             // Skip mod if the mod already exists natively
-            if (modExistsNatively(modId))
-                continue
+            for (loader in loaders) {
+                if (modExistsNatively(loader.getNativeModId(modId, nativeModLoaderName)))
+                    continue@definitionsLoad
+            }
 
             // Get all definitions from other loaders that match this definition
             val definitions = loadersToDefinitions
@@ -85,6 +88,12 @@ abstract class KnitLoader<C>(val nativeModLoaderName: String) {
 
             // The definitions are then added in for the loader to consider.
             definitionsToLoad[prioritizedDefinition.second] = prioritizedDefinition.first
+
+            // Store the natively mapped mod IDs, as in some cases, the official Fabric mods have different IDs from the Forge ID.
+            for (dependency in prioritizedDefinition.second.dependencies) {
+                if (!mappedModIds.contains(dependency.id))
+                    mappedModIds[dependency.id] = prioritizedDefinition.first.getNativeModId(dependency.id, nativeModLoaderName)
+            }
         }
 
         // We should also load the built-in mod definitions. This occurs after the definition loading above, because some mods may "provide" the mod in their respective metadata files,
@@ -105,7 +114,7 @@ abstract class KnitLoader<C>(val nativeModLoaderName: String) {
 
         // Second pass, validate all dependencies
         // This is in a separate method to allow for the Quilt module to override and handle the broken dependencies by itself.
-        validateDependencies(definitionsToLoad)
+        validateDependencies(definitionsToLoad, mappedModIds)
 
         // Third pass, create containers for all mod definitions.
         // Kilt is also able to use this for mod remapping and sorting, and they will be injected into the native mod loader later.
@@ -128,7 +137,7 @@ abstract class KnitLoader<C>(val nativeModLoaderName: String) {
         }
     }
 
-    protected open fun validateDependencies(definitions: Map<ModDefinition, KnitModLoader<*>>) {
+    protected open fun validateDependencies(definitions: Map<ModDefinition, KnitModLoader<*>>, mappedIds: Map<String, String>) {
         val failedDependencies = mutableListOf<DependencyState>()
 
         for (definition in definitions.keys) {
@@ -138,13 +147,13 @@ abstract class KnitLoader<C>(val nativeModLoaderName: String) {
                     continue
 
                 // Check if Dependency ID actually exists
-                if (dependency.type.checkIsMissing && !modExistsNatively(dependency.id) && definitions.keys.none { it.id == dependency.id }) {
+                if (dependency.type.checkIsMissing && !modExistsNatively(mappedIds.getOrElse(dependency.id) { dependency.id }) && definitions.keys.none { it.id == dependency.id }) {
                     failedDependencies.add(MissingDependencyState(definition, dependency, ModVersion.EMPTY))
                     continue
                 }
 
                 // If the mod is built-in, focus on using the built-in definition
-                val dependencyVersion = if (modExistsNatively(dependency.id) && definitions.keys.none { it.id == dependency.id && it.isBuiltin })
+                val dependencyVersion = if (modExistsNatively(mappedIds.getOrElse(dependency.id) { dependency.id }) && definitions.keys.none { it.id == dependency.id && it.isBuiltin })
                     getNativeModVersion(dependency.id)
                 else
                     definitions.keys.first { it.id == dependency.id }.version

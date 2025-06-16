@@ -53,6 +53,9 @@ abstract class KnitLoader<C>(val nativeModLoaderName: String) {
                             // If the file has not been loaded by Fabric, throw an exception.
                             if (!fileExistsNatively(modPath))
                                 throw e
+                        } catch (e: Throwable) {
+                            logger.error("Failed to load file ${modPath.fileName}!")
+                            e.printStackTrace()
                         }
                     }
                 }

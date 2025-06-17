@@ -50,11 +50,11 @@ public abstract class SystemReportMixin {
         }
     }
 
-    // Kilt: Filter Forge mods from Fabric's list
+    // Knit: Filter our mods from Fabric's list
     @TargetHandler(mixin = "net.fabricmc.fabric.mixin.crash.report.info.SystemDetailsMixin", name = "appendMods")
     @ModifyReceiver(method = "@MixinSquared:Handler", at = @At(value = "INVOKE", target = "Ljava/util/ArrayList;iterator()Ljava/util/Iterator;"))
     private static ArrayList<ModContainer> knit_loader$removeForgeModsFromList(ArrayList<ModContainer> instance) {
-        return new ArrayList<>(instance.stream().filter(e -> ((KnitLoaderFabric) KnitLoader.Companion.getInstance()).getContainers().containsValue(e))
+        return new ArrayList<>(instance.stream().filter(e -> !((KnitLoaderFabric) KnitLoader.Companion.getInstance()).getContainers().containsValue(e))
             .toList());
     }
 }

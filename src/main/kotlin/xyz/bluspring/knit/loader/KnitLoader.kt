@@ -32,11 +32,17 @@ abstract class KnitLoader<C>(val nativeModLoaderName: String) {
     abstract fun isValidEnvironment(env: ModEnvironment): Boolean
 
     suspend fun scanMods(path: Path) {
+        val startTime = System.currentTimeMillis()
         val loadersToDefinitions = Collections.synchronizedMap(mutableMapOf<KnitModLoader<*>, MutableSet<ModDefinition>>())
 
+        logger.debug("Scanning for mods in path {}...", path)
         // Scans all mods, retrieving their mod definitions.
         for (loader in loaders) {
+            logger.debug("Scanning for mods for loader {} ({})...", loader.id, loader.supportedLoader)
+
             for (scanDir in loader.modDirs) {
+                logger.debug("Scanning for mods in directory {}...", scanDir)
+
                 path.resolve(scanDir).walk().filter { !it.isDirectory() }.forEach { modPath ->
                     for (loader in loaders) {
                         try {
@@ -46,6 +52,14 @@ abstract class KnitLoader<C>(val nativeModLoaderName: String) {
                                 val definitions = loadersToDefinitions.computeIfAbsent(loader) { Collections.synchronizedSet(mutableSetOf()) }
 
                                 synchronized(definitions) {
+                                    logger.debug(
+                                        "Discovered mod definitions {} under path {} for loader {} ({})",
+                                        definitions.joinToString(",") { it.id },
+                                        modPath,
+                                        loader.id,
+                                        loader.supportedLoader
+                                    )
+
                                     definitions.addAll(definitionsToAdd)
                                 }
                             }
@@ -65,12 +79,16 @@ abstract class KnitLoader<C>(val nativeModLoaderName: String) {
         val definitionsToLoad = mutableMapOf<ModDefinition, KnitModLoader<*>>()
         val mappedModIds = mutableMapOf<String, String>()
 
+        logger.debug("Found ${definitionsToLoad.size} mod definitions.")
+
         // First pass, get all mods that are to be loaded by Knit.
         definitionsLoad@for (modId in loadersToDefinitions.values.flatten().distinctBy { it.id }.map { it.id }) {
             // Skip mod if the mod already exists natively
             for (loader in loaders) {
-                if (modExistsNatively(loader.getNativeModId(modId, nativeModLoaderName)))
+                if (modExistsNatively(loader.getNativeModId(modId, nativeModLoaderName))) {
+                    logger.debug("Ignoring mod ID $modId, because mod already exists natively.")
                     continue@definitionsLoad
+                }
             }
 
             // Get all definitions from other loaders that match this definition
@@ -80,8 +98,10 @@ abstract class KnitLoader<C>(val nativeModLoaderName: String) {
                 .sortedByDescending { it.second.version }
 
             // Our definitions list is empty, skip.
-            if (definitions.isEmpty())
+            if (definitions.isEmpty()) {
+                logger.debug("No definitions loaded in this environment for mod ID $modId, skipping.")
                 continue
+            }
 
             // Use the definition with the newest version.
             val highestDefinition = definitions.first().second
@@ -89,8 +109,10 @@ abstract class KnitLoader<C>(val nativeModLoaderName: String) {
             // If the mod is able to load natively within the native mod loader, we need to ignore it.
             // For instance, YetAnotherConfigLib provides a mods.toml that has an invalid mod ID, and there are
             // Forge mods that provide a fabric.mod.json that doesn't actually have any entrypoints.
-            if (fileExistsNatively(highestDefinition.originalPath) && canModLoadNatively(highestDefinition.originalPath))
+            if (fileExistsNatively(highestDefinition.originalPath) && canModLoadNatively(highestDefinition.originalPath)) {
+                logger.debug("Ignoring mod definition with path {} because it can load natively.", highestDefinition.originalPath)
                 continue
+            }
 
             // Then, sort by loading priority of loaders.
             val prioritizedDefinition = definitions.filter { it.second.version == highestDefinition.version }
@@ -108,6 +130,7 @@ abstract class KnitLoader<C>(val nativeModLoaderName: String) {
 
         // We should also load the built-in mod definitions. This occurs after the definition loading above, because some mods may "provide" the mod in their respective metadata files,
         // so the modExistsNatively check may end up thinking it is available.
+        logger.debug("Loading all built-in mod definitions...")
         for (loader in loaders) {
             for (definition in loader.getBuiltinModDefinitions()) {
                 // If the definition somehow already exists, we need to overwrite it with the built-in mod definition.
@@ -118,6 +141,7 @@ abstract class KnitLoader<C>(val nativeModLoaderName: String) {
                     definitionsToLoad.remove(existingDefinition)
                 }
 
+                logger.debug("Found built-in mod definition ${definition.id} for loader ${loader.id} (${loader.supportedLoader})")
                 definitionsToLoad[definition] = loader
             }
         }
@@ -128,6 +152,7 @@ abstract class KnitLoader<C>(val nativeModLoaderName: String) {
 
         // Third pass, create containers for all mod definitions.
         // Kilt is also able to use this for mod remapping and sorting, and they will be injected into the native mod loader later.
+        logger.debug("Creating mod containers for all mod definitions...")
         for (loader in loaders.sortedBy { it.id }) {
             val loaderDefinitions = definitionsToLoad.filterValues { it == loader }.keys
             val containers = loader.createModContainers(loaderDefinitions)
@@ -142,12 +167,16 @@ abstract class KnitLoader<C>(val nativeModLoaderName: String) {
         }
 
         // We've finished mod scanning now, so let's notify the mod loaders so they can do whatever they want.
+        logger.debug("Finished mod scanning, notifying mod loaders...")
         for (loader in loaders) {
             loader.finishModScanning()
         }
+
+        logger.info("Finished scanning for mods. (took ${System.currentTimeMillis() - startTime} ms)")
     }
 
     protected open fun validateDependencies(definitions: Map<ModDefinition, KnitModLoader<*>>, mappedIds: Map<String, String>) {
+        logger.debug("Validating dependencies for ${definitions.size} mods.")
         val failedDependencies = mutableListOf<DependencyState>()
 
         for (definition in definitions.keys) {

@@ -143,6 +143,25 @@ class KnitLoaderFabric : KnitLoader<ModContainerImpl>("Fabric") {
         return false
     }
 
+    private val modCandidatesField = FabricLoaderImpl::class.java.getDeclaredField("modCandidates")
+
+    init {
+        modCandidatesField.isAccessible = true
+    }
+
+    override fun canModLoadNatively(path: Path): Boolean {
+        val candidates = (modCandidatesField.get(FabricLoaderImpl.INSTANCE) as List<ModCandidateImpl>?)
+
+        if (candidates == null)
+            return false
+
+        // Try to find a mod candidate that matches the provided path
+        val matchingCandidate = candidates.firstOrNull { it.paths.any { p -> p == path } || it.originPaths.any { p -> p == path } } ?: return false
+
+        // If the entrypoint keys are empty, that likely means it does not run natively at all, same with the mixin configs and language adapters too.
+        return matchingCandidate.metadata.entrypointKeys.isNotEmpty() || matchingCandidate.metadata.getMixinConfigs(FabricLoader.getInstance().environmentType).isNotEmpty() || matchingCandidate.metadata.languageAdapterDefinitions.isNotEmpty()
+    }
+
     override fun getNativeModVersion(id: String): ModVersion {
         return FabricModVersion(FabricLoader.getInstance().getModContainer(id).orElseThrow().metadata.version)
     }

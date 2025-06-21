@@ -83,7 +83,14 @@ abstract class KnitLoader<C>(val nativeModLoaderName: String) {
             if (definitions.isEmpty())
                 continue
 
+            // Use the definition with the newest version.
             val highestDefinition = definitions.first().second
+
+            // If the mod is able to load natively within the native mod loader, we need to ignore it.
+            // For instance, YetAnotherConfigLib provides a mods.toml that has an invalid mod ID, and there are
+            // Forge mods that provide a fabric.mod.json that doesn't actually have any entrypoints.
+            if (fileExistsNatively(highestDefinition.originalPath) && canModLoadNatively(highestDefinition.originalPath))
+                continue
 
             // Then, sort by loading priority of loaders.
             val prioritizedDefinition = definitions.filter { it.second.version == highestDefinition.version }
@@ -241,6 +248,7 @@ abstract class KnitLoader<C>(val nativeModLoaderName: String) {
     abstract fun modExistsNatively(id: String): Boolean
     abstract fun getNativeModVersion(id: String): ModVersion
     abstract fun fileExistsNatively(path: Path): Boolean
+    abstract fun canModLoadNatively(path: Path): Boolean
 
     fun getLoaderById(id: String): KnitModLoader<*>? {
         return this.loaders.firstOrNull { it.id == id }

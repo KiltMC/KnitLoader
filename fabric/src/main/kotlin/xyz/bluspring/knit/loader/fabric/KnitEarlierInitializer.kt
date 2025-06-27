@@ -13,7 +13,11 @@ class KnitEarlierInitializer : PrePrePreLaunchEntrypoint {
 
         runBlocking(Dispatchers.IO) {
             // Scans the mods from the game directory.
-            loader.scanMods(FabricLoader.getInstance().gameDir)
+            try {
+                loader.scanMods(FabricLoader.getInstance().gameDir)
+            } catch (e: Throwable) {
+                KnitLoader.instance.displayError("Errors occurred during mod scanning!", RuntimeException(e))
+            }
         }
     }
 }

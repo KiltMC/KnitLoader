@@ -5,6 +5,8 @@ import net.fabricmc.loader.api.FabricLoader
 import net.fabricmc.loader.impl.FabricLoaderImpl
 import net.fabricmc.loader.impl.ModContainerImpl
 import net.fabricmc.loader.impl.discovery.ModCandidateImpl
+import net.fabricmc.loader.impl.gui.FabricGuiEntry
+import net.fabricmc.loader.impl.gui.FabricStatusTree
 import net.fabricmc.loader.impl.launch.FabricLauncherBase
 import net.fabricmc.loader.impl.metadata.LoaderModMetadata
 import net.fabricmc.loader.impl.util.FileSystemUtil
@@ -141,6 +143,56 @@ class KnitLoaderFabric : KnitLoader<ModContainerImpl>("Fabric") {
         }
 
         return false
+    }
+
+    override fun displayDependencyErrorGUI(failedDependencies: List<DependencyState>) {
+        FabricGuiEntry.displayError("Knit Loader has detected some incompatible dependencies!", null, { tree ->
+            val errorTab = tree.addTab("Knit Error")
+
+            val sortedDependencies = failedDependencies
+                .map { it.mod to it }
+                .groupBy { it.first }
+                .mapValues { it.value.map { b -> b.second } }
+
+            for ((mod, states) in sortedDependencies) {
+                if (states.none { it.dependency.type.shouldExitOnFail })
+                    continue
+
+                val modBranch = errorTab.node.addMessage("${mod.displayName} (${mod.id}):", FabricStatusTree.FabricTreeWarningLevel.ERROR)
+
+                for (state in states) {
+                    if (!state.dependency.type.shouldExitOnFail)
+                        continue
+
+                    modBranch.addMessage(state.toString(), FabricStatusTree.FabricTreeWarningLevel.ERROR)
+                }
+            }
+
+            tree.tabs.removeIf { tab -> tab != errorTab }
+        }, true)
+
+        super.displayDependencyErrorGUI(failedDependencies)
+    }
+
+    override fun displayErrorGUI(message: String, exception: Exception) {
+        FabricGuiEntry.displayError(message, exception, true)
+
+        super.displayErrorGUI(message, exception)
+    }
+
+    override fun displayErrorTreeGUI(message: String, exceptions: Map<String, Exception>) {
+        FabricGuiEntry.displayError(message, null, { tree ->
+            val errorTab = tree.addTab("Knit Error")
+
+            for ((msg, exception) in exceptions) {
+                errorTab.node.addMessage(msg, FabricStatusTree.FabricTreeWarningLevel.ERROR)
+                    .addCleanedException(exception)
+            }
+
+            tree.tabs.removeIf { tab -> tab != errorTab }
+        }, true)
+
+        super.displayErrorTreeGUI(message, exceptions)
     }
 
     private val modCandidatesField = FabricLoaderImpl::class.java.getDeclaredField("modCandidates")

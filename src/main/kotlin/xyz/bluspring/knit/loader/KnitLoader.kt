@@ -213,8 +213,8 @@ abstract class KnitLoader<C>(val nativeModLoaderName: String) {
         }
 
         // If something failed, be sure to throw the error.
-        if (failedDependencies.isNotEmpty() && failedDependencies.any { it.dependency.type.shouldExitOnFail }) {
-            displayError(failedDependencies)
+        if (failedDependencies.isNotEmpty()) {
+            displayDependencyError(failedDependencies)
         }
     }
 
@@ -241,9 +241,12 @@ abstract class KnitLoader<C>(val nativeModLoaderName: String) {
     }
 
     // Displays both a GUI and CLI error to the user.
-    protected open fun displayError(failedDependencies: List<DependencyState>) {
+    protected fun displayDependencyError(failedDependencies: List<DependencyState>) {
         // This is the default CLI error, and should typically also be called.
-        logger.error("Knit Loader has detected some incompatible dependencies!")
+        if (failedDependencies.any { it.dependency.type.shouldExitOnFail })
+            logger.error("Knit Loader has detected some incompatible dependencies!")
+        else
+            logger.warn("Knit Loader has detected some suggested dependency changes:")
 
         val sortedDependencies = failedDependencies
             .map { it.mod to it }
@@ -251,7 +254,10 @@ abstract class KnitLoader<C>(val nativeModLoaderName: String) {
             .mapValues { it.value.map { b -> b.second } }
 
         for ((mod, states) in sortedDependencies) {
-            logger.error("- ${mod.displayName} (${mod.id} - ${mod.originalPath.fileName})")
+            if (states.any { it.dependency.type.shouldExitOnFail })
+                logger.error("- ${mod.displayName} (${mod.id} - ${mod.originalPath.fileName})")
+            else
+                logger.warn("- ${mod.displayName} (${mod.id} - ${mod.originalPath.fileName})")
 
             for (state in states) {
                 if (state.dependency.type.shouldExitOnFail)
@@ -261,14 +267,26 @@ abstract class KnitLoader<C>(val nativeModLoaderName: String) {
             }
         }
 
-        if (failedDependencies.any { it.dependency.type.shouldExitOnFail })
-            exitProcess(1)
+        if (failedDependencies.any { it.dependency.type.shouldExitOnFail }) {
+            displayDependencyErrorGUI(failedDependencies)
+        }
     }
 
-    open fun displayError(exception: Exception) {
+    protected open fun displayDependencyErrorGUI(failedDependencies: List<DependencyState>) {
+        exitProcess(1)
+    }
+
+    fun displayError(message: String, exception: Exception) {
         exception.printStackTrace()
+        displayErrorGUI(message, exception)
 
         throw exception
+    }
+
+    open fun displayErrorGUI(message: String, exception: Exception) {
+    }
+
+    open fun displayErrorTreeGUI(message: String, exceptions: Map<String, Exception>) {
     }
 
     /**

@@ -219,7 +219,10 @@ class KnitLoaderFabric : KnitLoader<ModContainerImpl>("Fabric") {
         val matchingCandidate = candidates.firstOrNull { it.paths.any { p -> p == path } || it.originPaths.any { p -> p == path } } ?: return false
 
         // If the entrypoint keys are empty, that likely means it does not run natively at all, same with the mixin configs and language adapters too.
-        return matchingCandidate.metadata.entrypointKeys.isNotEmpty() || matchingCandidate.metadata.getMixinConfigs(FabricLoader.getInstance().environmentType).isNotEmpty() || matchingCandidate.metadata.languageAdapterDefinitions.isNotEmpty()
+        return matchingCandidate.metadata.entrypointKeys.isNotEmpty()
+                || matchingCandidate.metadata.getMixinConfigs(FabricLoader.getInstance().environmentType).isNotEmpty()
+                || matchingCandidate.metadata.languageAdapterDefinitions.isNotEmpty()
+                || matchingCandidate.metadata.dependencies.any { it.modId == "fabric-resource-loader-v0" } // auto-generated pack by Modrinth
     }
 
     override fun getNativeModVersion(id: String): ModVersion {

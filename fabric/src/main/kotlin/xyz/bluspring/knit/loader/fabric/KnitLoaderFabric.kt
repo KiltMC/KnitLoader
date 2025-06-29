@@ -93,6 +93,8 @@ class KnitLoaderFabric : KnitLoader<ModContainerImpl>("Fabric") {
         // We should ensure that the loaders are pre-initialized, before the mixins get loaded themselves.
         super.injectModMixins()
 
+        logger.debug("Injecting mod mixins into Fabric Mixin...")
+
         // Currently praying that having a similarly named mixin config isn't actually a problem
         val configToModMap = mutableMapOf<String, ModContainerImpl>()
 
@@ -110,6 +112,8 @@ class KnitLoaderFabric : KnitLoader<ModContainerImpl>("Fabric") {
 
                        // Add the configuration into mixin directly.
                        Mixins.addConfiguration(config.config)
+
+                       logger.debug("Added mixin config ${config.config}")
                    } catch (e: Throwable) {
                        logger.error("Failed to load mixins for ${mod.definition.displayName} (${mod.definition.id}), loaded by ${loader.id}/${loader.supportedLoader}!")
                        e.printStackTrace()
@@ -127,7 +131,11 @@ class KnitLoaderFabric : KnitLoader<ModContainerImpl>("Fabric") {
             config.decorate(FabricUtil.KEY_MOD_ID, mod.metadata.id)
             // Set the compatibility key to latest, and kinda just hope for the best.
             config.decorate(FabricUtil.KEY_COMPATIBILITY, FabricUtil.COMPATIBILITY_LATEST)
+
+            logger.debug("Decorated mixin config ${rawConfig.name}/${config.name} for ${mod.metadata.id}")
         }
+
+        logger.debug("Injected mod mixins into Fabric mixin!")
     }
 
     override fun modExistsNatively(id: String): Boolean {

@@ -236,7 +236,12 @@ abstract class KnitLoader<C>(val nativeModLoaderName: String) {
     // We should also ensure that the loaders are pre-initialized, before mixins get loaded themselves.
     open fun injectModMixins() {
         for (loader in loaders) {
-            loader.preInitialize()
+            try {
+                loader.preInitialize()
+            } catch (e: Throwable) {
+                logger.error("Failed to pre-initialize loader ${loader.id}/${loader.supportedLoader}!")
+                e.printStackTrace()
+            }
         }
     }
 

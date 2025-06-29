@@ -1,5 +1,6 @@
 package xyz.bluspring.knit.loader.fabric
 
+import com.llamalad7.mixinextras.utils.MixinInternals
 import org.objectweb.asm.tree.ClassNode
 import org.spongepowered.asm.mixin.extensibility.IMixinConfigPlugin
 import org.spongepowered.asm.mixin.extensibility.IMixinInfo
@@ -7,6 +8,8 @@ import xyz.bluspring.knit.loader.KnitLoader
 
 class KnitMixinPlugin : IMixinConfigPlugin {
     override fun onLoad(mixinPackage: String?) {
+        MixinInternals.registerExtension(KnitMixinExtension())
+
         KnitLoader.logger.info("Injecting loaded Knit mods into Fabric...")
         KnitLoader.instance.injectModsToLoader()
     }
@@ -26,9 +29,6 @@ class KnitMixinPlugin : IMixinConfigPlugin {
     }
 
     override fun getMixins(): List<String?>? {
-        // Inject the mod mixins here, otherwise they just don't apply ever
-        KnitLoader.instance.injectModMixins()
-
         return null
     }
 

@@ -9,7 +9,6 @@ import xyz.bluspring.knit.loader.KnitLoader
 class KnitEarlierInitializer : PrePrePreLaunchEntrypoint {
     override fun onLanguageAdapterLaunch() {
         val loader = KnitLoaderFabric()
-        KnitLoader.instance = loader
 
         runBlocking(Dispatchers.IO) {
             // Scans the mods from the game directory.

@@ -21,6 +21,8 @@ abstract class KnitLoader<C>(val nativeModLoaderName: String) {
     val containers = mutableMapOf<KnitMod, C>()
 
     init {
+        instance = this
+
         for (loader in ServiceLoader.load(KnitModLoader::class.java)) {
             logger.info("Found mod loader ${loader.id} for loader ${loader.supportedLoader}.")
             loaders.add(loader)

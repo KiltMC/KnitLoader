@@ -7,8 +7,15 @@ import org.spongepowered.asm.mixin.transformer.ext.ITargetClassContext
 import xyz.bluspring.knit.loader.KnitLoader
 
 class KnitMixinExtension : IExtension {
+    companion object {
+        private var wasInitialized = false
+    }
+
     override fun checkActive(environment: MixinEnvironment?): Boolean {
-        KnitLoader.instance.injectModMixins()
+        if (!wasInitialized) {
+            KnitLoader.instance.injectModMixins()
+            wasInitialized = true
+        }
         return false
     }
 

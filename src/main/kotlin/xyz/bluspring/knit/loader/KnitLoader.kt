@@ -195,7 +195,7 @@ abstract class KnitLoader<C>(val nativeModLoaderName: String) {
 
                 // If the mod is built-in, focus on using the built-in definition
                 val dependencyVersion = if (modExistsNatively(mappedIds.getOrElse(dependency.id) { dependency.id }) && definitions.keys.none { it.id == dependency.id && it.isBuiltin })
-                    getNativeModVersion(dependency.id)
+                    getNativeModVersion(mappedIds.getOrElse(dependency.id) { dependency.id })
                 else
                     definitions.keys.first { it.id == dependency.id }.version
 

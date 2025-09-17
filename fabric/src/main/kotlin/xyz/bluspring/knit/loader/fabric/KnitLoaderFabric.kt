@@ -119,6 +119,16 @@ class KnitLoaderFabric : KnitLoader<ModContainerImpl>("Fabric") {
                        e.printStackTrace()
                    }
                 }
+
+                val currentConfigs = Mixins.getConfigs().map { it.name }
+                mod.loadAdditionalMixinConfigs()
+                val newConfigs = Mixins.getConfigs().map { it.name }
+
+                val addedConfigs = newConfigs.filter { !currentConfigs.contains(it) }
+
+                for (config in addedConfigs) {
+                    configToModMap[config] = containers[mod]!!
+                }
             }
         }
 

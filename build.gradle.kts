@@ -19,6 +19,16 @@ allprojects {
         maven("https://maven.fabricmc.net")
         maven("https://maven.bawnorton.com/releases")
     }
+
+    java {
+        withSourcesJar()
+        targetCompatibility = JavaVersion.VERSION_17
+        sourceCompatibility = JavaVersion.VERSION_17
+    }
+
+    kotlin {
+        jvmToolchain(17)
+    }
 }
 
 subprojects {

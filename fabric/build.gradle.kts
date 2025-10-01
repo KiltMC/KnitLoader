@@ -9,7 +9,7 @@ base {
 }
 
 dependencies {
-    minecraft("com.mojang:minecraft:${project.parent?.property("minecraft_version")}")
+    minecraft("com.mojang:minecraft:${rootProject.property("minecraft_version")}")
     mappings(loom.officialMojangMappings())
 
     modImplementation("net.fabricmc:fabric-loader:${rootProject.property("loader_version")}")

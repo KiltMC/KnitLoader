@@ -8,6 +8,12 @@ base {
     archivesName.set("Knit-Loader-Fabric")
 }
 
+loom {
+    mixin {
+        useLegacyMixinAp = false
+    }
+}
+
 dependencies {
     minecraft("com.mojang:minecraft:${project.parent?.property("minecraft_version")}")
     mappings(loom.officialMojangMappings())

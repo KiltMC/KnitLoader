@@ -1,0 +1,11 @@
+{
+    "required": true,
+    "minVersion": "0.8",
+    "package": "xyz.bluspring.knit.loader.mixin",
+    "compatibilityLevel": "JAVA_17",
+    "mixins": [
+        "SystemReportMixin"
+    ],
+    "client": [
+    ]
+}

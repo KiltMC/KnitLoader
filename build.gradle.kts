@@ -42,4 +42,7 @@ dependencies {
 
     // Right off the bat, we'll get every Kotlin standard library we'd ever need from here.
     compileOnly("net.fabricmc:fabric-language-kotlin:${rootProject.property("fabric_kotlin_version")}")
+
+    // Loader-independent mixins :D
+    compileOnly("net.fabricmc:sponge-mixin:${property("fabric_mixin_version")}")
 }

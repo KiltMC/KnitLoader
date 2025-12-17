@@ -163,7 +163,7 @@ class FabricModMetadata(private val definition: ModDefinition, private val loade
             .toMutableList()
     }
 
-    override fun getAccessWidener(): String? {
+    override fun getClassTweaker(): String? {
         return null
     }
 

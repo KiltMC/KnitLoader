@@ -20,7 +20,7 @@ import java.util.function.Supplier;
     "net/minecraft/util/SystemDetails" // Yarn
 }, priority = 1050)
 public abstract class SystemReportMixin {
-    @Shadow(aliases = {"method_37123", "addSection"})
+    @Shadow(aliases = {"addSection"})
     public abstract void setDetail(String identifier, Supplier<String> valueSupplier);
 
     @Inject(method = "<init>", at = @At("RETURN"))

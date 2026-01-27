@@ -20,8 +20,7 @@
         ]
     },
     "mixins": [
-        "knit_loader.fabric.mixins.json",
-        "knit_loader.mixins.json"
+        "knit_loader.fabric.mixins.json"
     ],
     "depends": {
         "fabricloader": ">=${loader_version}",

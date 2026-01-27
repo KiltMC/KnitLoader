@@ -44,5 +44,5 @@ dependencies {
     compileOnly("net.fabricmc:fabric-language-kotlin:${rootProject.property("fabric_kotlin_version")}")
 
     // Loader-independent mixins :D
-    compileOnly("net.fabricmc:sponge-mixin:${property("fabric_mixin_version")}")
+//    compileOnly("net.fabricmc:sponge-mixin:${property("fabric_mixin_version")}")
 }

@@ -99,7 +99,7 @@ class KnitLoaderFabric : KnitLoader<ModContainerImpl>("Fabric") {
         val configToModMap = mutableMapOf<String, ModContainerImpl>()
 
         for (loader in loaders) {
-            for (mod in loader.mods) {
+            for (mod in loader.mods.filter { it.definition.shouldRegister }) {
                 for (config in mod.definition.mixinConfigs) {
                    try {
                        // If this environment isn't valid for the mixin, just ignore.

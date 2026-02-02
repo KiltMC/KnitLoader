@@ -64,6 +64,12 @@ data class ModDefinition(
     val isBuiltin: Boolean = false,
 
     /**
+     * Specifies whether the mod should be getting registered into the native mod loader.
+     * Usually useful in cases where a mod loader supports multiple mods sharing one definition.
+     */
+    val shouldRegister: Boolean = true,
+
+    /**
      * Additional arbitrary data that, while unused by Knit, is additional defining data for the mod loader to use, such as manifest information.
      */
     val additionalData: Map<String, Any?> = mapOf(),

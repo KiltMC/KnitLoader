@@ -226,7 +226,7 @@ abstract class KnitLoader<C>(val nativeModLoaderName: String) {
     // at the mixin plugin level, whereas the language provider level iterates through the mod candidates, and as such a CME will occur.
     open fun injectModsToLoader() {
         for (loader in loaders) {
-            for (mod in loader.mods) {
+            for (mod in loader.mods.filter { it.definition.shouldRegister }) {
                 val container = createContainer(mod)
                 this.containers[mod] = container
             }

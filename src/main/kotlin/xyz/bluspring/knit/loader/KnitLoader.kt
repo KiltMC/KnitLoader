@@ -197,7 +197,11 @@ abstract class KnitLoader<C>(val nativeModLoaderName: String) {
                 val dependencyVersion = if (modExistsNatively(mappedIds.getOrElse(dependency.id) { dependency.id }) && definitions.keys.none { it.id == dependency.id && it.isBuiltin })
                     getNativeModVersion(mappedIds.getOrElse(dependency.id) { dependency.id })
                 else
-                    definitions.keys.first { it.id == dependency.id }.version
+                    definitions.keys.firstOrNull { it.id == dependency.id }?.version
+
+                // Don't attempt to continue resolving, it's not needed.
+                if (dependencyVersion == null)
+                    continue
 
                 // Check if dependency constraints match
                 if (dependency.constraint.matches(dependencyVersion.toString())) {

@@ -18,6 +18,7 @@ allprojects {
         mavenCentral()
         maven("https://maven.fabricmc.net")
         maven("https://maven.bawnorton.com/releases")
+        maven("https://maven.florianreuth.de/snapshots")
     }
 
     java {

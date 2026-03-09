@@ -1,6 +1,6 @@
 package xyz.bluspring.knit.loader.fabric
 
-import de.florianmichael.asmfabricloader.api.event.PrePrePreLaunchEntrypoint
+import de.florianreuth.asmfabricloader.api.event.PrePrePreLaunchEntrypoint
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
 import net.fabricmc.loader.api.FabricLoader

@@ -24,7 +24,7 @@ dependencies {
     modImplementation ("net.fabricmc:fabric-language-kotlin:${rootProject.property("fabric_kotlin_version")}")
 
     // Cursed Fabric/Mixin stuff
-    include(modApi("xyz.bluspring:AsmFabricLoader:${project.parent?.property("asmfabricloader_version")}")!!)
+    include(modApi("de.florianreuth:asmfabricloader:${project.parent?.property("asmfabricloader_version")}")!!)
     include(implementation(annotationProcessor("com.github.bawnorton.mixinsquared:mixinsquared-fabric:${rootProject.property("mixin_squared_version")}")!!)!!)
 
     api(project(project.parent!!.path))

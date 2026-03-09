@@ -28,6 +28,10 @@ class KnitLoaderQuilt : KnitLoader<ModContainer>("Quilt"), QuiltLoaderPlugin {
         return this.context.manager().modPaths.contains(path)
     }
 
+    override fun canModLoadNatively(path: Path): Boolean {
+        TODO("Not yet implemented")
+    }
+
     override fun modExistsNatively(id: String): Boolean {
         return QuiltLoader.isModLoaded(id)
     }

@@ -1,5 +1,5 @@
 plugins {
-    id("org.quiltmc.loom") version "1.7.4"
+    id("org.quiltmc.loom") version "1.14.3"
 }
 
 base {

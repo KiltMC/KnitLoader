@@ -33,11 +33,11 @@ abstract class KnitLoader<C>(val nativeModLoaderName: String) {
 
     abstract fun isValidEnvironment(env: ModEnvironment): Boolean
 
-    suspend fun scanMods(path: Path) {
+    suspend fun scanMods(paths: Collection<Path>) {
         val startTime = System.currentTimeMillis()
         val loadersToDefinitions = Collections.synchronizedMap(mutableMapOf<KnitModLoader<*>, MutableSet<ModDefinition>>())
 
-        logger.debug("Scanning for mods in path {}...", path)
+        logger.debug("Scanning for mods in path {}...", paths)
         // Scans all mods, retrieving their mod definitions.
         for (loader in loaders) {
             logger.debug("Scanning for mods for loader {} ({})...", loader.id, loader.supportedLoader)
@@ -45,33 +45,35 @@ abstract class KnitLoader<C>(val nativeModLoaderName: String) {
             for (scanDir in loader.modDirs) {
                 logger.debug("Scanning for mods in directory {}...", scanDir)
 
-                path.resolve(scanDir).walk().filter { !it.isDirectory() }.forEach { modPath ->
-                    for (loader in loaders) {
-                        try {
-                            val definitionsToAdd = loader.getModDefinitions(modPath)
+                paths.forEach {
+                    it.resolve(scanDir).walk().filter { !it.isDirectory() }.forEach { modPath ->
+                        for (loader in loaders) {
+                            try {
+                                val definitionsToAdd = loader.getModDefinitions(modPath)
 
-                            synchronized(loadersToDefinitions) {
-                                val definitions = loadersToDefinitions.computeIfAbsent(loader) { Collections.synchronizedSet(mutableSetOf()) }
+                                synchronized(loadersToDefinitions) {
+                                    val definitions = loadersToDefinitions.computeIfAbsent(loader) { Collections.synchronizedSet(mutableSetOf()) }
 
-                                synchronized(definitions) {
-                                    logger.debug(
-                                        "Discovered mod definitions {} under path {} for loader {} ({})",
-                                        definitions.joinToString(",") { it.id },
-                                        modPath,
-                                        loader.id,
-                                        loader.supportedLoader
-                                    )
+                                    synchronized(definitions) {
+                                        logger.debug(
+                                            "Discovered mod definitions {} under path {} for loader {} ({})",
+                                            definitions.joinToString(",") { it.id },
+                                            modPath,
+                                            loader.id,
+                                            loader.supportedLoader
+                                        )
 
-                                    definitions.addAll(definitionsToAdd)
+                                        definitions.addAll(definitionsToAdd)
+                                    }
                                 }
+                            } catch (e: IncompatibleModException) {
+                                // If the file has not been loaded by Fabric, throw an exception.
+                                if (!fileExistsNatively(modPath))
+                                    throw e
+                            } catch (e: Throwable) {
+                                logger.error("Failed to load file ${modPath.fileName}!")
+                                e.printStackTrace()
                             }
-                        } catch (e: IncompatibleModException) {
-                            // If the file has not been loaded by Fabric, throw an exception.
-                            if (!fileExistsNatively(modPath))
-                                throw e
-                        } catch (e: Throwable) {
-                            logger.error("Failed to load file ${modPath.fileName}!")
-                            e.printStackTrace()
                         }
                     }
                 }

@@ -47,7 +47,8 @@ class KnitLoaderQuilt : KnitLoader<ModContainer>("Quilt"), QuiltLoaderPlugin {
         this.context = context
 
         runBlocking(Dispatchers.IO) {
-            scanMods(context.manager().gameDirectory)
+            //TODO Get all mods directories
+            scanMods(listOf(context.manager().gameDirectory))
         }
     }
 

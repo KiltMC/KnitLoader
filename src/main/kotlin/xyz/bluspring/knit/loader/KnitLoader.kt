@@ -19,6 +19,7 @@ import kotlin.system.exitProcess
 abstract class KnitLoader<C>(val nativeModLoaderName: String) {
     val loaders = sortedSetOf<KnitModLoader<*>>(Comparator.comparing { loader -> loader.loadingPriority })
     val containers = mutableMapOf<KnitMod, C>()
+    val extraGameDirectories = mutableSetOf<Path>()
 
     init {
         instance = this
@@ -33,14 +34,18 @@ abstract class KnitLoader<C>(val nativeModLoaderName: String) {
 
     abstract fun isValidEnvironment(env: ModEnvironment): Boolean
 
+    fun addGameDirectory(path: Path) {
+        extraGameDirectories.add(path)
+    }
+
     suspend fun scanMods(path: Path) {
         val startTime = System.currentTimeMillis()
         val loadersToDefinitions = Collections.synchronizedMap(mutableMapOf<KnitModLoader<*>, MutableSet<ModDefinition>>())
 
+        ServiceLoader.load(KnitAPI::class.java).forEach{it.beforeModScan()}
+
         val pathsToScan = mutableSetOf(path)
-        pathsToScan.addAll(
-            ServiceLoader.load(GameDirectoryFinder::class.java).flatMap { it.findGameDirectories() }
-        )
+        pathsToScan.addAll(extraGameDirectories)
         logger.debug("Scanning for mods in paths {}...", pathsToScan)
         // Scans all mods, retrieving their mod definitions.
         for (loader in loaders) {

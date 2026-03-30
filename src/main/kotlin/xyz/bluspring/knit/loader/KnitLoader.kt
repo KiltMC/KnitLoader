@@ -189,6 +189,8 @@ abstract class KnitLoader<C>(val nativeModLoaderName: String) {
         // We've finished mod scanning now, so let's notify the mod loaders so they can do whatever they want.
         logger.debug("Finished mod scanning, notifying mod loaders...")
         for (loader in loaders) {
+            val api = KnitApi(loader)
+            ServiceLoader.load(KnitNativeModCompatExtension::class.java).forEach{it.beforeFinishScanning(api)}
             loader.finishModScanning()
         }
 

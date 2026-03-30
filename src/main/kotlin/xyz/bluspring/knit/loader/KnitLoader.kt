@@ -3,6 +3,8 @@ package xyz.bluspring.knit.loader
 import org.jetbrains.annotations.ApiStatus
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import xyz.bluspring.knit.loader.api.KnitAddBuiltinModsApi
+import xyz.bluspring.knit.loader.api.KnitApi
 import xyz.bluspring.knit.loader.api.KnitNativeModCompatExtension
 import xyz.bluspring.knit.loader.api.KnitPreModScanApi
 import xyz.bluspring.knit.loader.mod.*
@@ -141,7 +143,16 @@ abstract class KnitLoader<C>(val nativeModLoaderName: String) {
         // so the modExistsNatively check may end up thinking it is available.
         logger.debug("Loading all built-in mod definitions...")
         for (loader in loaders) {
-            for (definition in loader.getBuiltinModDefinitions()) {
+            val api = KnitAddBuiltinModsApi(loader)
+            var builtins = loader.getBuiltinModDefinitions()
+            ServiceLoader.load(KnitNativeModCompatExtension::class.java).forEach{extension ->
+                extension.onBuiltinModDefinitions(api)
+            }
+            if (api.modDefinitions.isNotEmpty()) {
+                builtins = builtins.toMutableList()
+                builtins.addAll(api.modDefinitions)
+            }
+            for (definition in builtins) {
                 // If the definition somehow already exists, we need to overwrite it with the built-in mod definition.
                 val existingDefinition = definitionsToLoad.keys.firstOrNull { it.id == definition.id }
                 if (existingDefinition != null) {

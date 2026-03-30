@@ -3,18 +3,14 @@ package xyz.bluspring.knit.loader
 import org.jetbrains.annotations.ApiStatus
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import xyz.bluspring.knit.loader.api.KnitAddBuiltinModsApi
-import xyz.bluspring.knit.loader.api.KnitAddBuiltinModsApiImpl
-import xyz.bluspring.knit.loader.api.KnitApi
-import xyz.bluspring.knit.loader.api.KnitApiImpl
+import xyz.bluspring.knit.loader.api.impl.KnitAddBuiltinModsApiImpl
+import xyz.bluspring.knit.loader.api.impl.KnitApiImpl
 import xyz.bluspring.knit.loader.api.KnitNativeModCompatExtension
-import xyz.bluspring.knit.loader.api.KnitModScanSetupApi
-import xyz.bluspring.knit.loader.api.KnitModScanSetupApiImpl
+import xyz.bluspring.knit.loader.api.impl.KnitModScanSetupApiImpl
 import xyz.bluspring.knit.loader.mod.*
 import xyz.bluspring.knit.loader.util.IncompatibleModException
 import java.nio.file.Path
 import java.util.*
-import java.util.stream.Stream
 import kotlin.io.path.isDirectory
 import kotlin.io.path.walk
 import kotlin.system.exitProcess
@@ -27,7 +23,7 @@ import kotlin.system.exitProcess
 abstract class KnitLoader<C>(val nativeModLoaderName: String) {
     val loaders = sortedSetOf<KnitModLoader<*>>(Comparator.comparing { loader -> loader.loadingPriority })
     val containers = mutableMapOf<KnitMod, C>()
-    val apiServices: ServiceLoader<KnitNativeModCompatExtension>
+    val apiServices: Collection<KnitNativeModCompatExtension>
 
     init {
         instance = this
@@ -39,7 +35,7 @@ abstract class KnitLoader<C>(val nativeModLoaderName: String) {
 
         logger.info("Knit Loader initialized under $nativeModLoaderName mod loader.")
 
-        apiServices = ServiceLoader.load(KnitNativeModCompatExtension::class.java)
+        apiServices = ServiceLoader.load(KnitNativeModCompatExtension::class.java).toList()
     }
 
     abstract fun isValidEnvironment(env: ModEnvironment): Boolean

@@ -1,6 +1,7 @@
-package xyz.bluspring.knit.loader.api
+package xyz.bluspring.knit.loader.api.impl
 
 import xyz.bluspring.knit.loader.KnitModLoader
+import xyz.bluspring.knit.loader.api.KnitAddBuiltinModsApi
 import xyz.bluspring.knit.loader.mod.ModDefinition
 
 data class KnitAddBuiltinModsApiImpl(

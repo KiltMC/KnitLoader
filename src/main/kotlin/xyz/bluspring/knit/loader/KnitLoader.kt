@@ -3,10 +3,13 @@ package xyz.bluspring.knit.loader
 import org.jetbrains.annotations.ApiStatus
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import xyz.bluspring.knit.loader.api.KnitNativeModCompatExtension
+import xyz.bluspring.knit.loader.api.KnitPreModScanApi
 import xyz.bluspring.knit.loader.mod.*
 import xyz.bluspring.knit.loader.util.IncompatibleModException
 import java.nio.file.Path
 import java.util.*
+import java.util.stream.Stream
 import kotlin.io.path.isDirectory
 import kotlin.io.path.walk
 import kotlin.system.exitProcess
@@ -19,7 +22,6 @@ import kotlin.system.exitProcess
 abstract class KnitLoader<C>(val nativeModLoaderName: String) {
     val loaders = sortedSetOf<KnitModLoader<*>>(Comparator.comparing { loader -> loader.loadingPriority })
     val containers = mutableMapOf<KnitMod, C>()
-    val extraGameDirectories = mutableSetOf<Path>()
 
     init {
         instance = this
@@ -34,55 +36,49 @@ abstract class KnitLoader<C>(val nativeModLoaderName: String) {
 
     abstract fun isValidEnvironment(env: ModEnvironment): Boolean
 
-    fun addGameDirectory(path: Path) {
-        extraGameDirectories.add(path)
-    }
-
     suspend fun scanMods(path: Path) {
         val startTime = System.currentTimeMillis()
         val loadersToDefinitions = Collections.synchronizedMap(mutableMapOf<KnitModLoader<*>, MutableSet<ModDefinition>>())
 
-        ServiceLoader.load(KnitAPI::class.java).forEach{it.beforeModScan()}
-
-        val pathsToScan = mutableSetOf(path)
-        pathsToScan.addAll(extraGameDirectories)
-        logger.debug("Scanning for mods in paths {}...", pathsToScan)
+        logger.debug("Scanning for mods in path {}...", path)
         // Scans all mods, retrieving their mod definitions.
         for (loader in loaders) {
+            val api = KnitPreModScanApi(loader)
+            ServiceLoader.load(KnitNativeModCompatExtension::class.java).forEach{it.beforeModScan(api)}
             logger.debug("Scanning for mods for loader {} ({})...", loader.id, loader.supportedLoader)
 
-            for (scanDir in loader.modDirs) {
+            for (scanDir in Stream.concat(
+                loader.modDirs.stream().map { path.resolve(it) },
+                api.modDirectories.stream()
+            ).distinct()) {
                 logger.debug("Scanning for mods in directory {}...", scanDir)
+                scanDir.walk().filter { !it.isDirectory() }.forEach { modPath ->
+                    for (loader in loaders) {
+                        try {
+                            val definitionsToAdd = loader.getModDefinitions(modPath)
 
-                pathsToScan.forEach { path ->
-                    path.resolve(scanDir).walk().filter { !it.isDirectory() }.forEach { modPath ->
-                        for (loader in loaders) {
-                            try {
-                                val definitionsToAdd = loader.getModDefinitions(modPath)
+                            synchronized(loadersToDefinitions) {
+                                val definitions = loadersToDefinitions.computeIfAbsent(loader) { Collections.synchronizedSet(mutableSetOf()) }
 
-                                synchronized(loadersToDefinitions) {
-                                    val definitions = loadersToDefinitions.computeIfAbsent(loader) { Collections.synchronizedSet(mutableSetOf()) }
+                                synchronized(definitions) {
+                                    logger.debug(
+                                        "Discovered mod definitions {} under path {} for loader {} ({})",
+                                        definitions.joinToString(",") { it.id },
+                                        modPath,
+                                        loader.id,
+                                        loader.supportedLoader
+                                    )
 
-                                    synchronized(definitions) {
-                                        logger.debug(
-                                            "Discovered mod definitions {} under path {} for loader {} ({})",
-                                            definitions.joinToString(",") { it.id },
-                                            modPath,
-                                            loader.id,
-                                            loader.supportedLoader
-                                        )
-
-                                        definitions.addAll(definitionsToAdd)
-                                    }
+                                    definitions.addAll(definitionsToAdd)
                                 }
-                            } catch (e: IncompatibleModException) {
-                                // If the file has not been loaded by Fabric, throw an exception.
-                                if (!fileExistsNatively(modPath))
-                                    throw e
-                            } catch (e: Throwable) {
-                                logger.error("Failed to load file ${modPath.fileName}!")
-                                e.printStackTrace()
                             }
+                        } catch (e: IncompatibleModException) {
+                            // If the file has not been loaded by Fabric, throw an exception.
+                            if (!fileExistsNatively(modPath))
+                                throw e
+                        } catch (e: Throwable) {
+                            logger.error("Failed to load file ${modPath.fileName}!")
+                            e.printStackTrace()
                         }
                     }
                 }

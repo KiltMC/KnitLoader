@@ -4,4 +4,5 @@ interface KnitNativeModCompatExtension {
     fun beforeModScan(api: KnitPreModScanApi) {}
     fun onBuiltinModDefinitions(api: KnitAddBuiltinModsApi) {}
     fun beforeFinishScanning(api: KnitApi) {}
+    fun afterFinishScanning(api: KnitApi) {}
 }

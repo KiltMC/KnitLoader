@@ -192,6 +192,7 @@ abstract class KnitLoader<C>(val nativeModLoaderName: String) {
             val api = KnitApi(loader)
             ServiceLoader.load(KnitNativeModCompatExtension::class.java).forEach{it.beforeFinishScanning(api)}
             loader.finishModScanning()
+            ServiceLoader.load(KnitNativeModCompatExtension::class.java).forEach{it.afterFinishScanning(api)}
         }
 
         logger.info("Finished scanning for mods. (took ${System.currentTimeMillis() - startTime} ms)")

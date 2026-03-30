@@ -4,9 +4,12 @@ import org.jetbrains.annotations.ApiStatus
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import xyz.bluspring.knit.loader.api.KnitAddBuiltinModsApi
+import xyz.bluspring.knit.loader.api.KnitAddBuiltinModsApiImpl
 import xyz.bluspring.knit.loader.api.KnitApi
+import xyz.bluspring.knit.loader.api.KnitApiImpl
 import xyz.bluspring.knit.loader.api.KnitNativeModCompatExtension
-import xyz.bluspring.knit.loader.api.KnitPreModScanApi
+import xyz.bluspring.knit.loader.api.KnitModScanSetupApi
+import xyz.bluspring.knit.loader.api.KnitModScanSetupApiImpl
 import xyz.bluspring.knit.loader.mod.*
 import xyz.bluspring.knit.loader.util.IncompatibleModException
 import java.nio.file.Path
@@ -24,6 +27,7 @@ import kotlin.system.exitProcess
 abstract class KnitLoader<C>(val nativeModLoaderName: String) {
     val loaders = sortedSetOf<KnitModLoader<*>>(Comparator.comparing { loader -> loader.loadingPriority })
     val containers = mutableMapOf<KnitMod, C>()
+    val apiServices: ServiceLoader<KnitNativeModCompatExtension>
 
     init {
         instance = this
@@ -34,6 +38,8 @@ abstract class KnitLoader<C>(val nativeModLoaderName: String) {
         }
 
         logger.info("Knit Loader initialized under $nativeModLoaderName mod loader.")
+
+        apiServices = ServiceLoader.load(KnitNativeModCompatExtension::class.java)
     }
 
     abstract fun isValidEnvironment(env: ModEnvironment): Boolean
@@ -45,14 +51,11 @@ abstract class KnitLoader<C>(val nativeModLoaderName: String) {
         logger.debug("Scanning for mods in path {}...", path)
         // Scans all mods, retrieving their mod definitions.
         for (loader in loaders) {
-            val api = KnitPreModScanApi(loader)
-            ServiceLoader.load(KnitNativeModCompatExtension::class.java).forEach{it.beforeModScan(api)}
+            val api = KnitModScanSetupApiImpl(loader)
+            apiServices.forEach{it.setupModScanning(api)}
             logger.debug("Scanning for mods for loader {} ({})...", loader.id, loader.supportedLoader)
 
-            for (scanDir in Stream.concat(
-                loader.modDirs.stream().map { path.resolve(it) },
-                api.modDirectories.stream()
-            ).distinct()) {
+            for (scanDir in loader.modDirs.map { path.resolve(it) }.union(api.modDirectories).distinct()) {
                 logger.debug("Scanning for mods in directory {}...", scanDir)
                 scanDir.walk().filter { !it.isDirectory() }.forEach { modPath ->
                     for (loader in loaders) {
@@ -143,26 +146,30 @@ abstract class KnitLoader<C>(val nativeModLoaderName: String) {
         // so the modExistsNatively check may end up thinking it is available.
         logger.debug("Loading all built-in mod definitions...")
         for (loader in loaders) {
-            val api = KnitAddBuiltinModsApi(loader)
-            var builtins = loader.getBuiltinModDefinitions()
-            ServiceLoader.load(KnitNativeModCompatExtension::class.java).forEach{extension ->
-                extension.onBuiltinModDefinitions(api)
+            val api = KnitAddBuiltinModsApiImpl(loader)
+            apiServices.forEach{extension ->
+                extension.onCreateBuiltinModDefinitions(api)
             }
-            if (api.modDefinitions.isNotEmpty()) {
-                builtins = builtins.toMutableList()
-                builtins.addAll(api.modDefinitions)
-            }
-            for (definition in builtins) {
-                // If the definition somehow already exists, we need to overwrite it with the built-in mod definition.
-                val existingDefinition = definitionsToLoad.keys.firstOrNull { it.id == definition.id }
-                if (existingDefinition != null) {
-                    val otherLoader = definitionsToLoad[existingDefinition]!!
-                    logger.warn("Mod definition for ID ${definition.id} already exists! Overwriting. (existing: ${otherLoader.id}/${otherLoader.supportedLoader}, new: ${loader.id}/${loader.supportedLoader})")
-                    definitionsToLoad.remove(existingDefinition)
+            loader.getBuiltinModDefinitions().run {
+                val builtins = if (api.modDefinitions.isNotEmpty()) {
+                    val list = this.toMutableList()
+                    list.addAll(api.modDefinitions)
+                    list
+                } else {
+                    this
                 }
+                for (definition in builtins) {
+                    // If the definition somehow already exists, we need to overwrite it with the built-in mod definition.
+                    val existingDefinition = definitionsToLoad.keys.firstOrNull { it.id == definition.id }
+                    if (existingDefinition != null) {
+                        val otherLoader = definitionsToLoad[existingDefinition]!!
+                        logger.warn("Mod definition for ID ${definition.id} already exists! Overwriting. (existing: ${otherLoader.id}/${otherLoader.supportedLoader}, new: ${loader.id}/${loader.supportedLoader})")
+                        definitionsToLoad.remove(existingDefinition)
+                    }
 
-                logger.debug("Found built-in mod definition ${definition.id} for loader ${loader.id} (${loader.supportedLoader})")
-                definitionsToLoad[definition] = loader
+                    logger.debug("Found built-in mod definition ${definition.id} for loader ${loader.id} (${loader.supportedLoader})")
+                    definitionsToLoad[definition] = loader
+                }
             }
         }
 
@@ -189,10 +196,10 @@ abstract class KnitLoader<C>(val nativeModLoaderName: String) {
         // We've finished mod scanning now, so let's notify the mod loaders so they can do whatever they want.
         logger.debug("Finished mod scanning, notifying mod loaders...")
         for (loader in loaders) {
-            val api = KnitApi(loader)
-            ServiceLoader.load(KnitNativeModCompatExtension::class.java).forEach{it.beforeFinishScanning(api)}
+            val api = KnitApiImpl(loader)
+            apiServices.forEach{it.beforeFinishScanning(api)}
             loader.finishModScanning()
-            ServiceLoader.load(KnitNativeModCompatExtension::class.java).forEach{it.afterFinishScanning(api)}
+            apiServices.forEach{it.afterFinishScanning(api)}
         }
 
         logger.info("Finished scanning for mods. (took ${System.currentTimeMillis() - startTime} ms)")

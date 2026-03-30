@@ -1,8 +1,8 @@
 package xyz.bluspring.knit.loader.api
 
 interface KnitNativeModCompatExtension {
-    fun beforeModScan(api: KnitPreModScanApi) {}
-    fun onBuiltinModDefinitions(api: KnitAddBuiltinModsApi) {}
+    fun setupModScanning(api: KnitModScanSetupApi) {}
+    fun onCreateBuiltinModDefinitions(api: KnitAddBuiltinModsApi) {}
     fun beforeFinishScanning(api: KnitApi) {}
     fun afterFinishScanning(api: KnitApi) {}
 }

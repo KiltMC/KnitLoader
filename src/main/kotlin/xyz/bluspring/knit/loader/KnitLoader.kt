@@ -23,7 +23,7 @@ import kotlin.system.exitProcess
 abstract class KnitLoader<C>(val nativeModLoaderName: String) {
     val loaders = sortedSetOf<KnitModLoader<*>>(Comparator.comparing { loader -> loader.loadingPriority })
     val containers = mutableMapOf<KnitMod, C>()
-    val apiServices: Collection<KnitNativeModCompatExtension>
+    val apiServices: Collection<KnitNativeModCompatExtension> = ServiceLoader.load(KnitNativeModCompatExtension::class.java).toList()
 
     init {
         instance = this
@@ -34,8 +34,6 @@ abstract class KnitLoader<C>(val nativeModLoaderName: String) {
         }
 
         logger.info("Knit Loader initialized under $nativeModLoaderName mod loader.")
-
-        apiServices = ServiceLoader.load(KnitNativeModCompatExtension::class.java).toList()
     }
 
     abstract fun isValidEnvironment(env: ModEnvironment): Boolean
@@ -146,26 +144,20 @@ abstract class KnitLoader<C>(val nativeModLoaderName: String) {
             apiServices.forEach{extension ->
                 extension.onCreateBuiltinModDefinitions(api)
             }
-            loader.getBuiltinModDefinitions().run {
-                val builtins = if (api.modDefinitions.isNotEmpty()) {
-                    val list = this.toMutableList()
-                    list.addAll(api.modDefinitions)
-                    list
-                } else {
-                    this
+            val builtins = loader.getBuiltinModDefinitions().toMutableList().apply {
+                this.addAll(api.modDefinitions)
+            }
+            for (definition in builtins) {
+                // If the definition somehow already exists, we need to overwrite it with the built-in mod definition.
+                val existingDefinition = definitionsToLoad.keys.firstOrNull { it.id == definition.id }
+                if (existingDefinition != null) {
+                    val otherLoader = definitionsToLoad[existingDefinition]!!
+                    logger.warn("Mod definition for ID ${definition.id} already exists! Overwriting. (existing: ${otherLoader.id}/${otherLoader.supportedLoader}, new: ${loader.id}/${loader.supportedLoader})")
+                    definitionsToLoad.remove(existingDefinition)
                 }
-                for (definition in builtins) {
-                    // If the definition somehow already exists, we need to overwrite it with the built-in mod definition.
-                    val existingDefinition = definitionsToLoad.keys.firstOrNull { it.id == definition.id }
-                    if (existingDefinition != null) {
-                        val otherLoader = definitionsToLoad[existingDefinition]!!
-                        logger.warn("Mod definition for ID ${definition.id} already exists! Overwriting. (existing: ${otherLoader.id}/${otherLoader.supportedLoader}, new: ${loader.id}/${loader.supportedLoader})")
-                        definitionsToLoad.remove(existingDefinition)
-                    }
 
-                    logger.debug("Found built-in mod definition ${definition.id} for loader ${loader.id} (${loader.supportedLoader})")
-                    definitionsToLoad[definition] = loader
-                }
+                logger.debug("Found built-in mod definition ${definition.id} for loader ${loader.id} (${loader.supportedLoader})")
+                definitionsToLoad[definition] = loader
             }
         }
 

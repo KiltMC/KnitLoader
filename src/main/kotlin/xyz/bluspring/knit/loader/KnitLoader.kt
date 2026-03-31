@@ -3,10 +3,10 @@ package xyz.bluspring.knit.loader
 import org.jetbrains.annotations.ApiStatus
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import xyz.bluspring.knit.loader.api.impl.KnitAddBuiltinModsApiImpl
-import xyz.bluspring.knit.loader.api.impl.KnitApiImpl
 import xyz.bluspring.knit.loader.api.KnitNativeModCompatExtension
-import xyz.bluspring.knit.loader.api.impl.KnitModScanSetupApiImpl
+import xyz.bluspring.knit.loader.impl.KnitAddBuiltinModsApiImpl
+import xyz.bluspring.knit.loader.impl.KnitApiImpl
+import xyz.bluspring.knit.loader.impl.KnitModScanSetupApiImpl
 import xyz.bluspring.knit.loader.mod.*
 import xyz.bluspring.knit.loader.util.IncompatibleModException
 import java.nio.file.Path

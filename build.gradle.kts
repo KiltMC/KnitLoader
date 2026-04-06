@@ -10,6 +10,18 @@ base {
 val knitVersion = property("mod_version") as String
 version = knitVersion
 
+fun convertJavaVersion(javaVersion: String): Int {
+    return try {
+        if (javaVersion.contains(".")) {
+            javaVersion.substring(javaVersion.lastIndexOf(".")+1).toInt()
+        } else {
+            javaVersion.toInt()
+        }
+    } catch (e : IllegalArgumentException) {
+        8
+    }
+}
+
 allprojects {
     apply(plugin = "java")
     apply(plugin = "org.jetbrains.kotlin.jvm")
@@ -23,12 +35,12 @@ allprojects {
 
     java {
         withSourcesJar()
-        targetCompatibility = JavaVersion.VERSION_17
-        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = rootProject.java.targetCompatibility
+        sourceCompatibility = rootProject.java.sourceCompatibility
     }
 
     kotlin {
-        jvmToolchain(17)
+        jvmToolchain(convertJavaVersion(rootProject.kotlin.compilerOptions.jvmTarget.get().target))
     }
 }
 

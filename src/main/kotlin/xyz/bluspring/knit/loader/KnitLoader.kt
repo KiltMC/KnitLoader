@@ -93,7 +93,7 @@ abstract class KnitLoader<C>(val nativeModLoaderName: String) {
         definitionsLoad@for (modId in loadersToDefinitions.values.flatten().distinctBy { it.id }.map { it.id }) {
             // Skip mod if the mod already exists natively
             for (loader in loaders) {
-                if (modExistsNatively(loader.getNativeModId(modId, nativeModLoaderName))) {
+                if (loader.modExistsNatively(loader.getNativeModId(modId, nativeModLoaderName))) {
                     logger.debug("Ignoring mod ID $modId, because mod already exists natively.")
                     continue@definitionsLoad
                 }

@@ -89,7 +89,7 @@ abstract class KnitModLoader<T : KnitMod>(
     /**
      * Allows the mod loader to check if the mod actually exists natively
      */
-    fun modExistsNatively(id: String): Boolean {
+    open fun modExistsNatively(id: String): Boolean {
         return KnitLoader.instance.modExistsNatively(id)
     }
 

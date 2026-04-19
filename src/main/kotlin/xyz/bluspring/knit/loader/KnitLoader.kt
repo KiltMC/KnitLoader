@@ -185,9 +185,9 @@ abstract class KnitLoader<C>(val nativeModLoaderName: String) {
         logger.debug("Finished mod scanning, notifying mod loaders...")
         for (loader in loaders) {
             val api = KnitApiImpl(loader)
-            apiServices.forEach{it.beforeFinishScanning(api)}
+            apiServices.forEach { it.beforeFinishScanning(api) }
             loader.finishModScanning()
-            apiServices.forEach{it.afterFinishScanning(api)}
+            apiServices.forEach { it.afterFinishScanning(api) }
         }
 
         logger.info("Finished scanning for mods. (took ${System.currentTimeMillis() - startTime} ms)")
@@ -252,6 +252,9 @@ abstract class KnitLoader<C>(val nativeModLoaderName: String) {
             }
         }
     }
+
+    // Used for injecting mod JARs directly into the classpath. Useful when some classes need to be loaded but not the actual mod.
+    abstract fun injectIntoClasspath(path: Path)
 
     // Injects all modded mixins into the native mod loader. This may be handled by the native mod loader,
     // so we can intentionally keep in empty in some cases.

@@ -79,7 +79,7 @@ class KnitLoaderFabric : KnitLoader<ModContainerImpl>("Fabric") {
         modMap[mod.definition.id] = container
 
         // Add the mod to the class path.
-        FabricLauncherBase.getLauncher().addToClassPath(mod.definition.path)
+        injectIntoClasspath(mod.definition.path)
 
         // Force Java to be aware of the mod in the file system.
         // This is so any mods that try to open for resources from itself won't fail.
@@ -87,6 +87,10 @@ class KnitLoaderFabric : KnitLoader<ModContainerImpl>("Fabric") {
             FileSystemUtil.getJarFileSystem(mod.definition.path, true)
 
         return container
+    }
+
+    override fun injectIntoClasspath(path: Path) {
+        FabricLauncherBase.getLauncher().addToClassPath(path)
     }
 
     override fun injectModMixins() {

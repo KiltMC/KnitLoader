@@ -225,7 +225,7 @@ abstract class KnitLoader<C>(val nativeModLoaderName: String) {
                     if (dependency.type == ModDependency.Type.DISCOURAGED || dependency.type == ModDependency.Type.INCOMPATIBLE) {
                         failedDependencies.add(DependencyExists(definition, dependency, dependencyVersion))
                     }
-                } else {
+                } else if (dependency.type != ModDependency.Type.DISCOURAGED && dependency.type != ModDependency.Type.INCOMPATIBLE) {
                     // If the constraints do not match, add it in too.
                     failedDependencies.add(MismatchedDependencyVersionState(definition, dependency, dependencyVersion))
                 }

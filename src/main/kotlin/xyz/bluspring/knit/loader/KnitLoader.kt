@@ -342,7 +342,13 @@ abstract class KnitLoader<C>(val nativeModLoaderName: String) {
             return "Incompatible version of mod ID \"${dependency.id}\"! (expected: ${dependency.constraint}, got: $version)"
         }
     }
-    protected class DependencyExists(mod: ModDefinition, dependency: ModDependency, version: ModVersion) : DependencyState(mod, dependency, version)
+
+    protected class DependencyExists(mod: ModDefinition, dependency: ModDependency, version: ModVersion) : DependencyState(mod, dependency, version) {
+        override fun toString(): String {
+            return "Unexpected mod ID \"${dependency.id}\" matching version constraint ${dependency.constraint} was detected! (got: $version)"
+        }
+    }
+
     protected abstract class DependencyState(val mod: ModDefinition, val dependency: ModDependency, val version: ModVersion)
 
     companion object {

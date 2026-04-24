@@ -24,6 +24,10 @@ class KnitLoaderQuilt : KnitLoader<ModContainer>("Quilt"), QuiltLoaderPlugin {
         TODO("Not yet implemented")
     }
 
+    override fun injectIntoClasspath(path: Path) {
+        TODO("Not yet implemented")
+    }
+
     override fun fileExistsNatively(path: Path): Boolean {
         return this.context.manager().modPaths.contains(path)
     }

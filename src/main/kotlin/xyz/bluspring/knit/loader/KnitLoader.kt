@@ -200,7 +200,7 @@ abstract class KnitLoader<C>(val nativeModLoaderName: String) {
         for (definition in definitions.keys) {
             for (dependency in definition.dependencies) {
                 // Check if we should actually validate this dependency
-                if (isValidEnvironment(dependency.side))
+                if (!isValidEnvironment(dependency.side))
                     continue
 
                 // Check if Dependency ID actually exists

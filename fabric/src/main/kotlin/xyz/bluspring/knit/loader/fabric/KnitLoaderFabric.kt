@@ -1,5 +1,6 @@
 package xyz.bluspring.knit.loader.fabric
 
+import it.unimi.dsi.fastutil.objects.Object2IntLinkedOpenHashMap
 import net.fabricmc.api.EnvType
 import net.fabricmc.loader.api.FabricLoader
 import net.fabricmc.loader.impl.FabricLoaderImpl
@@ -101,6 +102,7 @@ class KnitLoaderFabric : KnitLoader<ModContainerImpl>("Fabric") {
 
         // Currently praying that having a similarly named mixin config isn't actually a problem
         val configToModMap = mutableMapOf<String, ModContainerImpl>()
+        val configToCompatibilityMap = Object2IntLinkedOpenHashMap<String>()
 
         for (loader in loaders) {
             for (mod in loader.mods.filter { it.definition.shouldRegister }) {
@@ -113,6 +115,7 @@ class KnitLoaderFabric : KnitLoader<ModContainerImpl>("Fabric") {
                        // Map the mixin config to the following container. This is specifically so we don't
                        // end up causing a CME later.
                        configToModMap[config.config] = containers[mod]!!
+                       configToCompatibilityMap[config.config] = loader.fabricMixinCompatibilityVersion
 
                        // Add the configuration into mixin directly.
                        Mixins.addConfiguration(config.config)
@@ -143,8 +146,13 @@ class KnitLoaderFabric : KnitLoader<ModContainerImpl>("Fabric") {
 
             val config = rawConfig.config
             config.decorate(FabricUtil.KEY_MOD_ID, mod.metadata.id)
-            // Set the compatibility key to latest, and kinda just hope for the best.
-            config.decorate(FabricUtil.KEY_COMPATIBILITY, FabricUtil.COMPATIBILITY_LATEST)
+
+            // We didn't hope hard enough and now we're here
+            var compatibility = configToCompatibilityMap.getOrDefault(config, FabricUtil.COMPATIBILITY_LATEST)
+            if (compatibility == -1)
+                compatibility = FabricUtil.COMPATIBILITY_LATEST
+
+            config.decorate(FabricUtil.KEY_COMPATIBILITY, compatibility)
 
             logger.debug("Decorated mixin config ${rawConfig.name}/${config.name} for ${mod.metadata.id}")
         }

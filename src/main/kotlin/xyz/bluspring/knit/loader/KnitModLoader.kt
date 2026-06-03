@@ -53,6 +53,12 @@ abstract class KnitModLoader<T : KnitMod>(
     open val loadingPriority = 1000
 
     /**
+     * The Fabric Mixin compatibility version. Based on https://github.com/FabricMC/Mixin/blob/main/src/main/java/org/spongepowered/asm/mixin/FabricUtil.java
+     * If it is -1, it will default to the latest.
+     */
+    open val fabricMixinCompatibilityVersion: Int = -1
+
+    /**
      * Relative to the run directory, but can also be absolute if needed.
      */
     open val modDirs: Set<Path> = setOf(Path("mods"))

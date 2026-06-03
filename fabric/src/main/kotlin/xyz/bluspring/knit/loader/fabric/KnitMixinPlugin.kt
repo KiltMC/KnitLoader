@@ -8,10 +8,10 @@ import xyz.bluspring.knit.loader.KnitLoader
 
 class KnitMixinPlugin : IMixinConfigPlugin {
     override fun onLoad(mixinPackage: String?) {
-        MixinInternals.registerExtension(KnitMixinExtension())
-
         KnitLoader.logger.info("Injecting loaded Knit mods into Fabric...")
         KnitLoader.instance.injectModsToLoader()
+
+        MixinInternals.registerExtension(KnitMixinExtension())
     }
 
     override fun getRefMapperConfig(): String? {

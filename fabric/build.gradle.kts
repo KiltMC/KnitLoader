@@ -1,5 +1,5 @@
 plugins {
-    id("fabric-loom")// version "1.11-SNAPSHOT"
+    id("net.fabricmc.fabric-loom")// version "1.11-SNAPSHOT"
 }
 
 val common by configurations.creating
@@ -16,15 +16,14 @@ loom {
 
 dependencies {
     minecraft("com.mojang:minecraft:${project.parent?.property("minecraft_version")}")
-    mappings(loom.officialMojangMappings())
 
-    modImplementation("net.fabricmc:fabric-loader:${rootProject.property("loader_version")}")
+    implementation("net.fabricmc:fabric-loader:${rootProject.property("loader_version")}")
 
     // Just because I like Kotlin more than Java
-    modImplementation ("net.fabricmc:fabric-language-kotlin:${rootProject.property("fabric_kotlin_version")}")
+    implementation ("net.fabricmc:fabric-language-kotlin:${rootProject.property("fabric_kotlin_version")}")
 
     // Cursed Fabric/Mixin stuff
-    include(modApi("de.florianreuth:asmfabricloader:${project.parent?.property("asmfabricloader_version")}")!!)
+    include(api("de.florianreuth:asmfabricloader:${project.parent?.property("asmfabricloader_version")}")!!)
     include(implementation(annotationProcessor("com.github.bawnorton.mixinsquared:mixinsquared-fabric:${rootProject.property("mixin_squared_version")}")!!)!!)
 
     api(project(project.parent!!.path))
@@ -69,12 +68,6 @@ tasks {
 
     shadowJar {
         configurations = listOf(common)
-        archiveClassifier = "dev-shadow"
-    }
-
-    remapJar {
-        inputFile.set(project.tasks.shadowJar.get().archiveFile)
         archiveClassifier = null
-        dependsOn(project.tasks.shadowJar)
     }
 }

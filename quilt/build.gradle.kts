@@ -30,10 +30,10 @@ dependencies {
     minecraft("com.mojang:minecraft:${rootProject.property("minecraft_version")}")
     mappings(loom.officialMojangMappings())
 
-    modImplementation("org.quiltmc:quilt-loader:${property("quilt_loader_version")}")
+    implementation("org.quiltmc:quilt-loader:${property("quilt_loader_version")}")
 
     // TODO: use Quilt Kotlin Libraries when it's updated to Kotlin 2.1.21
-    modImplementation ("net.fabricmc:fabric-language-kotlin:${rootProject.property("fabric_kotlin_version")}")
+    implementation ("net.fabricmc:fabric-language-kotlin:${rootProject.property("fabric_kotlin_version")}")
 
     api(project(project.parent!!.path))
     common(project(project.parent!!.path)) {

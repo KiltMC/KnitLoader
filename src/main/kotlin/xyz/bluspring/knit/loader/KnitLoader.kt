@@ -12,6 +12,7 @@ import xyz.bluspring.knit.loader.util.IncompatibleModException
 import java.nio.file.Path
 import java.util.*
 import kotlin.io.path.isDirectory
+import kotlin.io.path.listDirectoryEntries
 import kotlin.system.exitProcess
 
 /**
@@ -50,7 +51,7 @@ abstract class KnitLoader<C>(val nativeModLoaderName: String) {
 
             for (scanDir in loader.modDirs.map { path.resolve(it) }.union(api.modDirectories).distinct()) {
                 logger.debug("Scanning for mods in directory {}...", scanDir)
-                scanDir.filter { !it.isDirectory() }.forEach { modPath ->
+                scanDir.listDirectoryEntries().filter { !it.isDirectory() }.forEach { modPath ->
                     for (loader in loaders) {
                         try {
                             val definitionsToAdd = loader.getModDefinitions(modPath)

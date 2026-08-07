@@ -1,9 +1,9 @@
 plugins {
-    id("org.quiltmc.loom") version "1.14.3"
+    alias(libs.plugins.quilt.loom)
 }
 
 base {
-    archivesName.set("Knit-Loader-Quilt")
+    archivesName.set("knit-loader-quilt")
 }
 
 repositories {
@@ -27,13 +27,13 @@ loom {
 val common by configurations.creating
 
 dependencies {
-    minecraft("com.mojang:minecraft:${rootProject.property("minecraft_version")}")
+    minecraft(libs.minecraft)
     mappings(loom.officialMojangMappings())
 
-    modImplementation("org.quiltmc:quilt-loader:${property("quilt_loader_version")}")
+    modImplementation(libs.quilt.loader)
 
     // TODO: use Quilt Kotlin Libraries when it's updated to Kotlin 2.1.21
-    modImplementation ("net.fabricmc:fabric-language-kotlin:${rootProject.property("fabric_kotlin_version")}")
+    modImplementation(libs.fabric.kotlin)
 
     api(project(project.parent!!.path))
     common(project(project.parent!!.path)) {
@@ -45,7 +45,7 @@ tasks {
     processResources {
         val properties = mutableMapOf(
             "version" to project.version,
-            "fabric_kotlin_version" to project.property("fabric_kotlin_version")
+            "fabric_kotlin_version" to libs.versions.fabric.kotlin.get(),
         )
 
         for ((key, value) in properties) {

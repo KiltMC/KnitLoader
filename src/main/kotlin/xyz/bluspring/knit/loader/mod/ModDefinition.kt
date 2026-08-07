@@ -91,5 +91,18 @@ data class ModDefinition(
      */
     val originalPath: Path = path
 
-    data class MixinConfig(val config: String, val environment: ModEnvironment = ModEnvironment.BOTH)
+    data class MixinConfig(
+        val config: String,
+        val environment: ModEnvironment = ModEnvironment.BOTH,
+
+        /**
+         * Sets which behaviour level the mixins should run at. By default, it is the altest.
+         */
+        val behaviorVersion: ModVersion? = null,
+
+        /**
+         * The mod IDs required for this mixin configuration to be loaded.
+         */
+        val requiredModIds: List<String> = emptyList(),
+    )
 }

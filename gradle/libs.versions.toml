@@ -1,0 +1,45 @@
+[versions]
+# https://fabricmc.net/develop/
+fabric-loom = "1.17.+"
+
+# https://modrinth.com/mod/fabric-language-kotlin
+kotlin = "2.4.10"
+fabric-kotlin = "1.13.13+kotlin.2.4.10"
+
+# https://github.com/GradleUp/shadow/releases
+shadow = "9.6.1"
+
+## Common
+minecraft = "1.20.1"
+
+# https://github.com/Bawnorton/MixinSquared/releases
+mixinsquared = "0.3.3"
+# https://github.com/FabricMC/Mixin/blob/main/gradle.properties
+mixin = "0.17.3+mixin.0.8.7"
+
+## Fabric
+# https://fabricmc.net/develop/
+fabric-loader = "0.19.3"
+# https://maven.florianreuth.de/#/snapshots/de/florianreuth/asmfabricloader
+asmfabricloader = "2.2.2-SNAPSHOT"
+
+## Quilt
+# https://github.com/QuiltMC/quilt-loader/tags
+quilt-loader = "0.30.1-beta.2"
+quilt-loom = "1.11-SNAPSHOT"
+
+[libraries]
+minecraft = { module = "com.mojang:minecraft", version.ref = "minecraft" }
+
+fabric-loader = { module = "net.fabricmc:fabric-loader", version.ref = "fabric-loader" }
+fabric-kotlin = { module = "net.fabricmc:fabric-language-kotlin", version.ref = "fabric-kotlin" }
+asmfabricloader = { module = "de.florianreuth:asmfabricloader", version.ref = "asmfabricloader" }
+mixinsquared = { module = "com.github.bawnorton.mixinsquared:mixinsquared-fabric", version.ref = "mixinsquared" }
+
+quilt-loader = { module = "org.quiltmc:quilt-loader", version.ref = "quilt-loader" }
+
+[plugins]
+fabric-loom = { id = "fabric-loom", version.ref = "fabric-loom" }
+quilt-loom = { id = "org.quiltmc.loom", version.ref = "quilt-loom" }
+kotlin = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
+shadow = { id = "com.gradleup.shadow", version.ref = "shadow" }

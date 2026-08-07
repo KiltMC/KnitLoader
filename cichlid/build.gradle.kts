@@ -14,5 +14,5 @@ dependencies {
 }*/
 
 base {
-    archivesName.set("Knit-Loader-Cichlid")
+    archivesName.set("knit-loader-cichlid")
 }

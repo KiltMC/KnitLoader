@@ -1,11 +1,11 @@
 plugins {
-    id("fabric-loom")// version "1.11-SNAPSHOT"
+    alias(libs.plugins.fabric.loom)
 }
 
 val common by configurations.creating
 
 base {
-    archivesName.set("Knit-Loader-Fabric")
+    archivesName.set("knit-loader-fabric")
 }
 
 loom {
@@ -15,17 +15,21 @@ loom {
 }
 
 dependencies {
-    minecraft("com.mojang:minecraft:${project.parent?.property("minecraft_version")}")
+    minecraft(libs.minecraft)
     mappings(loom.officialMojangMappings())
 
-    modImplementation("net.fabricmc:fabric-loader:${rootProject.property("loader_version")}")
+    modImplementation(libs.fabric.loader)
 
     // Just because I like Kotlin more than Java
-    modImplementation ("net.fabricmc:fabric-language-kotlin:${rootProject.property("fabric_kotlin_version")}")
+    modImplementation(libs.fabric.kotlin)
 
     // Cursed Fabric/Mixin stuff
-    include(modApi("de.florianreuth:asmfabricloader:${project.parent?.property("asmfabricloader_version")}")!!)
-    include(implementation(annotationProcessor("com.github.bawnorton.mixinsquared:mixinsquared-fabric:${rootProject.property("mixin_squared_version")}")!!)!!)
+    include(libs.asmfabricloader)
+    modApi(libs.asmfabricloader)
+
+    include(libs.mixinsquared)
+    implementation(libs.mixinsquared)
+    annotationProcessor(libs.mixinsquared)
 
     api(project(project.parent!!.path))
     common(project(project.parent!!.path)) {
@@ -37,10 +41,9 @@ tasks {
     processResources {
         val properties = mutableMapOf(
             "version" to project.version,
-            "loader_version" to rootProject.property("loader_version"),
-            "fabric_version" to rootProject.property("fabric_version"),
-            "minecraft_version" to rootProject.property("minecraft_version"),
-            "fabric_kotlin_version" to project.property("fabric_kotlin_version")
+            "loader_version" to libs.versions.fabric.loader.get(),
+            "minecraft_version" to libs.versions.minecraft.get(),
+            "fabric_kotlin_version" to libs.versions.fabric.kotlin.get(),
         )
 
         for ((key, value) in properties) {

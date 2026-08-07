@@ -1,25 +1,13 @@
 plugins {
-    kotlin("jvm")
-    id("com.gradleup.shadow") version "9.4.2"
-}
-
-base {
-    archivesName.set("Knit-Loader")
+    alias(libs.plugins.kotlin)
+    alias(libs.plugins.shadow)
 }
 
 val knitVersion = property("mod_version") as String
 version = knitVersion
 
-fun convertJavaVersion(javaVersion: String): Int {
-    return try {
-        if (javaVersion.contains(".")) {
-            javaVersion.substring(javaVersion.lastIndexOf(".")+1).toInt()
-        } else {
-            javaVersion.toInt()
-        }
-    } catch (e : IllegalArgumentException) {
-        8
-    }
+base {
+    archivesName.set("knit-loader-common")
 }
 
 allprojects {
@@ -33,20 +21,24 @@ allprojects {
         maven("https://maven.florianreuth.de/snapshots")
     }
 
+    val javaVersion = 17
+
     java {
-        withSourcesJar()
-        targetCompatibility = rootProject.java.targetCompatibility
-        sourceCompatibility = rootProject.java.sourceCompatibility
+        toolchain {
+            languageVersion.set(JavaLanguageVersion.of(javaVersion))
+        }
     }
 
     kotlin {
-        jvmToolchain(convertJavaVersion(rootProject.kotlin.compilerOptions.jvmTarget.get().target))
+        jvmToolchain(javaVersion)
     }
+
+    group = "xyz.bluspring.knit-loader"
+    version = knitVersion
 }
 
 subprojects {
     apply(plugin = "com.gradleup.shadow")
-    version = knitVersion
 }
 
 dependencies {
@@ -54,7 +46,7 @@ dependencies {
     api("org.slf4j:slf4j-api:2.0.12")
 
     // Right off the bat, we'll get every Kotlin standard library we'd ever need from here.
-    compileOnly("net.fabricmc:fabric-language-kotlin:${rootProject.property("fabric_kotlin_version")}")
+    compileOnly(libs.fabric.kotlin)
 
     // Loader-independent mixins :D
 //    compileOnly("net.fabricmc:sponge-mixin:${property("fabric_mixin_version")}")

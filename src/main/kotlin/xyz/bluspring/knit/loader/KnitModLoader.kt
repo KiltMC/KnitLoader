@@ -2,8 +2,10 @@ package xyz.bluspring.knit.loader
 
 import xyz.bluspring.knit.loader.mod.KnitMod
 import xyz.bluspring.knit.loader.mod.ModDefinition
+import java.nio.file.Files
 import java.nio.file.Path
 import kotlin.io.path.Path
+import kotlin.io.path.isDirectory
 
 /**
  * An abstracted mod loader system to help load mods into the native (parent) mod loader.
@@ -61,7 +63,23 @@ abstract class KnitModLoader<T : KnitMod>(
     /**
      * Relative to the run directory, but can also be absolute if needed.
      */
+    @Deprecated(message = "Refactored to allow collecting file paths directly.", replaceWith = ReplaceWith("discoverModPaths"))
     open val modDirs: Set<Path> = setOf(Path("mods"))
+
+    /**
+     * Discovers a list of mod files to be loaded by this mod loader.
+     */
+    open fun discoverModPaths(gameDir: Path): Collection<Path> {
+        return this.modDirs.map { gameDir.resolve(it) }
+            .flatMap { Files.walk(it, 1).filter { p -> !p.isDirectory() }.toList() }
+    }
+
+    /**
+     * Collects any other mod definitions that may have been missed (i.e. mod definitions loaded via services)
+     */
+    open fun collectAdditionalModDefinitions(gameDir: Path): Collection<ModDefinition> {
+        return emptyList()
+    }
 
     /**
      * Gets the mod definitions of the provided path, for Knit to process. If the mod is invalid for the loader, simply return an empty list.

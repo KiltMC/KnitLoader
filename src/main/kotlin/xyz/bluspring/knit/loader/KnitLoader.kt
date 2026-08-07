@@ -9,10 +9,10 @@ import xyz.bluspring.knit.loader.impl.KnitApiImpl
 import xyz.bluspring.knit.loader.impl.KnitModScanSetupApiImpl
 import xyz.bluspring.knit.loader.mod.*
 import xyz.bluspring.knit.loader.util.IncompatibleModException
+import java.nio.file.Files
 import java.nio.file.Path
 import java.util.*
 import kotlin.io.path.isDirectory
-import kotlin.io.path.walk
 import kotlin.system.exitProcess
 
 /**
@@ -46,40 +46,50 @@ abstract class KnitLoader<C>(val nativeModLoaderName: String) {
         // Scans all mods, retrieving their mod definitions.
         for (loader in loaders) {
             val api = KnitModScanSetupApiImpl(loader)
-            apiServices.forEach{it.setupModScanning(api)}
+            apiServices.forEach { it.setupModScanning(api) }
             logger.debug("Scanning for mods for loader {} ({})...", loader.id, loader.supportedLoader)
 
-            for (scanDir in loader.modDirs.map { path.resolve(it) }.union(api.modDirectories).distinct()) {
-                logger.debug("Scanning for mods in directory {}...", scanDir)
-                scanDir.walk().filter { !it.isDirectory() }.forEach { modPath ->
-                    for (loader in loaders) {
-                        try {
-                            val definitionsToAdd = loader.getModDefinitions(modPath)
+            val modFiles = loader.discoverModPaths(path).union(api.modDirectories.flatMap {
+                Files.walk(it, 1).filter { p -> !p.isDirectory() }
+                    .toList()
+            }).distinct()
 
-                            synchronized(loadersToDefinitions) {
-                                val definitions = loadersToDefinitions.computeIfAbsent(loader) { Collections.synchronizedSet(mutableSetOf()) }
+            modFiles.filter { !it.isDirectory() }.forEach { modPath ->
+                for (loader in loaders) {
+                    try {
+                        val definitionsToAdd = loader.getModDefinitions(modPath)
 
-                                synchronized(definitions) {
-                                    logger.debug(
-                                        "Discovered mod definitions {} under path {} for loader {} ({})",
-                                        definitions.joinToString(",") { it.id },
-                                        modPath,
-                                        loader.id,
-                                        loader.supportedLoader
-                                    )
+                        synchronized(loadersToDefinitions) {
+                            val definitions = loadersToDefinitions.computeIfAbsent(loader) { Collections.synchronizedSet(mutableSetOf()) }
 
-                                    definitions.addAll(definitionsToAdd)
-                                }
+                            synchronized(definitions) {
+                                logger.debug(
+                                    "Discovered mod definitions {} under path {} for loader {} ({})",
+                                    definitionsToAdd.joinToString(",") { it.id },
+                                    modPath,
+                                    loader.id,
+                                    loader.supportedLoader
+                                )
+
+                                definitions.addAll(definitionsToAdd)
                             }
-                        } catch (e: IncompatibleModException) {
-                            // If the file has not been loaded by Fabric, throw an exception.
-                            if (!fileExistsNatively(modPath))
-                                throw e
-                        } catch (e: Throwable) {
-                            logger.error("Failed to load file ${modPath.fileName}!")
-                            e.printStackTrace()
                         }
+                    } catch (e: IncompatibleModException) {
+                        // If the file has not been loaded by Fabric, throw an exception.
+                        if (!fileExistsNatively(modPath))
+                            throw e
+                    } catch (e: Throwable) {
+                        logger.error("Failed to load file ${modPath.fileName}!")
+                        e.printStackTrace()
                     }
+                }
+            }
+
+            // Collect any additional mod definitions that may not have been covered.
+            synchronized(loadersToDefinitions) {
+                val definitions = loadersToDefinitions.computeIfAbsent(loader) { Collections.synchronizedSet(mutableSetOf()) }
+                synchronized(definitions) {
+                    definitions.addAll(loader.collectAdditionalModDefinitions(path))
                 }
             }
         }
@@ -141,7 +151,7 @@ abstract class KnitLoader<C>(val nativeModLoaderName: String) {
         logger.debug("Loading all built-in mod definitions...")
         for (loader in loaders) {
             val api = KnitAddBuiltinModsApiImpl(loader)
-            apiServices.forEach{extension ->
+            apiServices.forEach { extension ->
                 extension.onCreateBuiltinModDefinitions(api)
             }
             val builtins = loader.getBuiltinModDefinitions().toMutableList().apply {

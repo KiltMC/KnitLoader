@@ -28,12 +28,11 @@ val common by configurations.creating
 
 dependencies {
     minecraft(libs.minecraft)
-    mappings(loom.officialMojangMappings())
 
-    modImplementation(libs.quilt.loader)
+    implementation(libs.quilt.loader)
 
     // TODO: use Quilt Kotlin Libraries when it's updated to Kotlin 2.1.21
-    modImplementation(libs.fabric.kotlin)
+    implementation(libs.fabric.kotlin)
 
     api(project(project.parent!!.path))
     common(project(project.parent!!.path)) {
@@ -74,12 +73,6 @@ tasks {
 
     shadowJar {
         configurations = listOf(common)
-        archiveClassifier = "dev-shadow"
-    }
-
-    remapJar {
-        inputFile.set(project.tasks.shadowJar.get().archiveFile)
         archiveClassifier = null
-        dependsOn(project.tasks.shadowJar)
     }
 }

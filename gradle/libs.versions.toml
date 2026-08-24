@@ -10,7 +10,7 @@ fabric-kotlin = "1.13.13+kotlin.2.4.10"
 shadow = "9.6.1"
 
 ## Common
-minecraft = "1.20.1"
+minecraft = "26.1.2"
 
 # https://github.com/Bawnorton/MixinSquared/releases
 mixinsquared = "0.3.3"
@@ -26,7 +26,7 @@ asmfabricloader = "2.2.2-SNAPSHOT"
 ## Quilt
 # https://github.com/QuiltMC/quilt-loader/tags
 quilt-loader = "0.30.1-beta.2"
-quilt-loom = "1.11-SNAPSHOT"
+quilt-loom = "1.15.1"
 
 [libraries]
 minecraft = { module = "com.mojang:minecraft", version.ref = "minecraft" }
@@ -39,7 +39,7 @@ mixinsquared = { module = "com.github.bawnorton.mixinsquared:mixinsquared-fabric
 quilt-loader = { module = "org.quiltmc:quilt-loader", version.ref = "quilt-loader" }
 
 [plugins]
-fabric-loom = { id = "fabric-loom", version.ref = "fabric-loom" }
-quilt-loom = { id = "org.quiltmc.loom", version.ref = "quilt-loom" }
+fabric-loom = { id = "net.fabricmc.fabric-loom", version.ref = "fabric-loom" }
+quilt-loom = { id = "org.quiltmc.loom.no_remap", version.ref = "quilt-loom" }
 kotlin = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
 shadow = { id = "com.gradleup.shadow", version.ref = "shadow" }

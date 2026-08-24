@@ -16,16 +16,15 @@ loom {
 
 dependencies {
     minecraft(libs.minecraft)
-    mappings(loom.officialMojangMappings())
 
-    modImplementation(libs.fabric.loader)
+    implementation(libs.fabric.loader)
 
     // Just because I like Kotlin more than Java
-    modImplementation(libs.fabric.kotlin)
+    implementation(libs.fabric.kotlin)
 
     // Cursed Fabric/Mixin stuff
     include(libs.asmfabricloader)
-    modApi(libs.asmfabricloader)
+    api(libs.asmfabricloader)
 
     include(libs.mixinsquared)
     implementation(libs.mixinsquared)
@@ -72,12 +71,6 @@ tasks {
 
     shadowJar {
         configurations = listOf(common)
-        archiveClassifier = "dev-shadow"
-    }
-
-    remapJar {
-        inputFile.set(project.tasks.shadowJar.get().archiveFile)
         archiveClassifier = null
-        dependsOn(project.tasks.shadowJar)
     }
 }

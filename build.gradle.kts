@@ -21,7 +21,7 @@ allprojects {
         maven("https://maven.florianreuth.de/snapshots")
     }
 
-    val javaVersion = 17
+    val javaVersion = 25
 
     java {
         toolchain {

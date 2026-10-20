@@ -85,7 +85,7 @@ class KnitLoaderFabric : KnitLoader<ModContainerImpl>("Fabric") {
         // Force Java to be aware of the mod in the file system.
         // This is so any mods that try to open for resources from itself won't fail.
         if (mod.definition.path != mod.definition.originalPath) // *Some* libraries don't work correctly, somehow.
-            FileSystemUtil.getJarFileSystem(mod.definition.path, true)
+            FileSystemUtil.getJarFileSystem(mod.definition.path, FileSystemUtil.AccessMode.READ_WRITE_CREATE)
 
         return container
     }

@@ -148,13 +148,13 @@ class KnitLoaderFabric : KnitLoader<ModContainerImpl>("Fabric") {
             config.decorate(FabricUtil.KEY_MOD_ID, mod.metadata.id)
 
             // We didn't hope hard enough and now we're here
-            var compatibility = configToCompatibilityMap.getOrDefault(config, FabricUtil.COMPATIBILITY_LATEST)
+            var compatibility = configToCompatibilityMap.getOrDefault(config.name, FabricUtil.COMPATIBILITY_LATEST)
             if (compatibility == -1)
                 compatibility = FabricUtil.COMPATIBILITY_LATEST
 
             config.decorate(FabricUtil.KEY_COMPATIBILITY, compatibility)
 
-            logger.debug("Decorated mixin config ${rawConfig.name}/${config.name} for ${mod.metadata.id}")
+            logger.debug("Decorated mixin config ${rawConfig.name}/${config.name} for ${mod.metadata.id} with compatibility level $compatibility")
         }
 
         logger.debug("Injected mod mixins into Fabric mixin!")

@@ -85,7 +85,7 @@ class KnitLoaderFabric : KnitLoader<ModContainerImpl>("Fabric") {
         // Force Java to be aware of the mod in the file system.
         // This is so any mods that try to open for resources from itself won't fail.
         if (mod.definition.path != mod.definition.originalPath) // *Some* libraries don't work correctly, somehow.
-            FileSystemUtil.getJarFileSystem(mod.definition.path, true)
+            FileSystemUtil.getJarFileSystem(mod.definition.path, FileSystemUtil.AccessMode.READ_WRITE_CREATE)
 
         return container
     }
@@ -148,13 +148,13 @@ class KnitLoaderFabric : KnitLoader<ModContainerImpl>("Fabric") {
             config.decorate(FabricUtil.KEY_MOD_ID, mod.metadata.id)
 
             // We didn't hope hard enough and now we're here
-            var compatibility = configToCompatibilityMap.getOrDefault(config, FabricUtil.COMPATIBILITY_LATEST)
+            var compatibility = configToCompatibilityMap.getOrDefault(config.name, FabricUtil.COMPATIBILITY_LATEST)
             if (compatibility == -1)
                 compatibility = FabricUtil.COMPATIBILITY_LATEST
 
             config.decorate(FabricUtil.KEY_COMPATIBILITY, compatibility)
 
-            logger.debug("Decorated mixin config ${rawConfig.name}/${config.name} for ${mod.metadata.id}")
+            logger.debug("Decorated mixin config ${rawConfig.name}/${config.name} for ${mod.metadata.id} with compatibility level $compatibility")
         }
 
         logger.debug("Injected mod mixins into Fabric mixin!")

@@ -1,6 +1,6 @@
 [versions]
 # https://fabricmc.net/develop/
-fabric-loom = "1.17.+"
+fabric-loom = "1.18.+"
 
 # https://modrinth.com/mod/fabric-language-kotlin
 kotlin = "2.4.10"
@@ -19,13 +19,13 @@ mixin = "0.17.3+mixin.0.8.7"
 
 ## Fabric
 # https://fabricmc.net/develop/
-fabric-loader = "0.19.3"
+fabric-loader = "0.20.1"
 # https://maven.florianreuth.de/#/snapshots/de/florianreuth/asmfabricloader
 asmfabricloader = "2.2.2-SNAPSHOT"
 
 ## Quilt
 # https://github.com/QuiltMC/quilt-loader/tags
-quilt-loader = "0.30.1-beta.2"
+quilt-loader = "0.30.2"
 quilt-loom = "1.15.1"
 
 [libraries]

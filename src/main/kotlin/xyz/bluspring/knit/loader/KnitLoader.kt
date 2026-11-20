@@ -316,7 +316,7 @@ abstract class KnitLoader<C>(val nativeModLoaderName: String) {
         exitProcess(1)
     }
 
-    fun displayError(message: String, exception: Exception) {
+    fun displayError(message: String, exception: Exception): Nothing {
         exception.printStackTrace()
         displayErrorGUI(message, exception)
 
